@@ -75,6 +75,7 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                     <Switch
                       checked={!isCameraDisabled}
                       onCheckedChange={(checked) => setIsCameraDisabled(!checked)}
+                      className="data-[state=unchecked]:bg-zinc-600"
                     />
                   </div>
 
@@ -94,6 +95,7 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                     <Switch
                       checked={!isMicDisabled}
                       onCheckedChange={(checked) => setIsMicDisabled(!checked)}
+                      className="data-[state=unchecked]:bg-zinc-600"
                     />
                   </div>
 

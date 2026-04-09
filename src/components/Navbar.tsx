@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle"
 import { Code2 } from "lucide-react";
-import { SignedIn, UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton, SignedOut } from "@clerk/nextjs";
 import DasboardBtn from "./DashboardBtn";
+import LoginButton from "./LoginButton";
 
 function Navbar() {
   return (
-    <nav className="border-b">
-      <div className="flex h-16 items-center px-4 container mx-auto">
+    <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center px-4 mx-auto w-full">
         {/* LEFT SIDE -LOGO */}
         <Link
           href="/"
-          className="flex items-center gap-2 font-semibold text-2xl mr-6 font-mono hover:opacity-80 transition-opacity"
+          className="group flex items-center gap-2 font-semibold text-2xl mr-6 font-mono hover:opacity-80 transition"
         >
-          <Code2 className="size-8 text-emerald-500" />
+          <Code2 className="size-8 text-emerald-500 transition-transform duration-200 group-hover:rotate-6" />
           <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
             ScreenMeet
           </span>
@@ -27,6 +28,12 @@ function Navbar() {
             <UserButton />
           </div>
         </SignedIn>
+
+        <SignedOut>
+          <div className="ml-auto">
+            <LoginButton />
+          </div>
+        </SignedOut>
       </div>
     </nav>
   );

@@ -14,7 +14,7 @@ const useGetCallById = (id: string) => {
       try {
         const call = client.call("default", id);
         await call.get();
-        setCall(call);
+        if(call) setCall(call);
       } catch (error) {
         console.error(error);
         setCall(undefined);
