@@ -5,10 +5,13 @@ import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
 
+const INTERVIEW_STATUS="completed";
+
 function EndCallButton() {
   const call = useCall();
   const router = useRouter();
   const { useLocalParticipant } = useCallStateHooks();
+  //current users
   const localParticipant = useLocalParticipant();
 
   const updateInterviewStatus = useMutation(api.interviews.updateInterviewStatus);
@@ -29,7 +32,7 @@ function EndCallButton() {
 
       await updateInterviewStatus({
         id: interview._id,
-        status: "completed",
+        status: INTERVIEW_STATUS,
       });
 
       router.push("/");

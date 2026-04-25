@@ -89,6 +89,17 @@ export const CODING_QUESTIONS: CodeQuestion[] = [
         
     }
 }`,
+      cpp: `#include <vector>
+using namespace std;
+
+vector<int> twoSum(vector<int>& nums, int target) {
+  // Write your solution here
+    
+}`,
+      go: `func twoSum(nums []int, target int) []int {
+      // Write your solution here
+    
+}`,
     },
     constraints: [
       "2 ≤ nums.length ≤ 104",
@@ -126,6 +137,17 @@ export const CODING_QUESTIONS: CodeQuestion[] = [
         
     }
 }`,
+      cpp: `#include <vector>
+using namespace std;
+
+void reverseString(vector<char>& s) {
+     // Write your solution here
+
+}`,
+      go: `func reverseString(s []byte)  {
+    // Write your solution here
+
+}`,
     },
   },
   {
@@ -156,11 +178,116 @@ export const CODING_QUESTIONS: CodeQuestion[] = [
     pass`,
       java: `class Solution {
     public boolean isPalindrome(int x) {
-        // Write your solution here
-        
+        //write your solution here
     }
 }`,
+      cpp: `bool isPalindrome(int x) {
+       // Write your solution here
+    
+}`,
+      go: `func isPalindrome(x int) bool {
+    // Write your solution here
+
+}`,
     },
+  },
+  {
+    id: "longest-substring",
+    title: "Longest Substring Without Repeating Characters",
+    description:
+      "Find length of longest substring without repeating characters.",
+    examples: [
+      {
+        input: '"abcabcbb"',
+        output: "3",
+        explanation: "The answer is 'abc', with length 3.",
+      },
+      {
+        input: '"bbbbb"',
+        output: "1",
+      },
+    ],
+    starterCode: {
+      javascript: `function lengthOfLongestSubstring(s) {
+       // Write your solution here
+  
+}`,
+      python: `def length_of_longest_substring(s):
+       # Write your solution here
+    pass`,
+      java: `class Solution {
+    public int lengthOfLongestSubstring(String s) {
+         // Write your solution here
+
+    }
+}`,
+      cpp: `#include <string>
+using namespace std;
+
+int lengthOfLongestSubstring(string s) {
+     // Write your solution here
+
+}`,
+      go: `func lengthOfLongestSubstring(s string) int {
+    // Write your solution here
+
+}`,
+    },
+    constraints: [
+      "0 ≤ s.length ≤ 5 * 10^4",
+      "s consists of English letters, digits, symbols, and spaces",
+    ],
+  },
+
+  {
+    id: "median-of-two-sorted-arrays",
+    title: "Median of Two Sorted Arrays",
+    description:
+      "Find median of two sorted arrays in O(log(m+n)).",
+    examples: [
+      {
+        input: "nums1 = [1,3], nums2 = [2]",
+        output: "2.0",
+        explanation: "Merged array = [1,2,3], median = 2",
+      },
+      {
+        input: "nums1 = [1,2], nums2 = [3,4]",
+        output: "2.5",
+      },
+    ],
+    starterCode: {
+      javascript: `function findMedianSortedArrays(nums1, nums2) {
+       // Write your solution here
+  
+}`,
+      python: `def find_median_sorted_arrays(nums1, nums2):
+       # Write your solution here
+    pass`,
+      java: `class Solution {
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+         // Write your solution here
+
+    }
+}`,
+      cpp: `#include <vector>
+using namespace std;
+
+double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+ // Write your solution here
+    
+}`,
+      go: `func findMedianSortedArrays(nums1 []int, nums2 []int) float64 {
+    // Write your solution here
+
+}`,
+    },
+    constraints: [
+      "nums1.length == m",
+      "nums2.length == n",
+      "0 ≤ m, n ≤ 1000",
+      "1 ≤ m + n ≤ 2000",
+      "-10^6 ≤ nums1[i], nums2[i] ≤ 10^6",
+    ],
   },
 ];
 
@@ -168,6 +295,8 @@ export const LANGUAGES = [
   { id: "javascript", name: "JavaScript", icon: "/javascript.png" },
   { id: "python", name: "Python", icon: "/python.png" },
   { id: "java", name: "Java", icon: "/java.png" },
+  { id: "cpp", name: "C++", icon: "/cpp.png" },
+  { id: "go", name: "Go", icon: "/go.png" },
 ] as const;
 
 export interface CodeQuestion {
@@ -183,6 +312,8 @@ export interface CodeQuestion {
     javascript: string;
     python: string;
     java: string;
+    cpp: string;
+    go: string;
   };
   constraints?: string[];
 }

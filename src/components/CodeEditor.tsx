@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { AlertCircleIcon, BookIcon, LightbulbIcon } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
+type LanguageType = "javascript" | "python" | "java";
+
 function CodeEditor() {
   const [selectedQuestion, setSelectedQuestion] = useState(CODING_QUESTIONS[0]);
-  const [language, setLanguage] = useState<"javascript" | "python" | "java">(LANGUAGES[0].id);
+  const [language, setLanguage] = useState<LanguageType>(LANGUAGES[0].id);
   const [code, setCode] = useState(selectedQuestion.starterCode[language]);
 
   const handleQuestionChange = (questionId: string) => {
@@ -18,7 +20,7 @@ function CodeEditor() {
     setCode(question.starterCode[language]);
   };
 
-  const handleLanguageChange = (newLanguage: "javascript" | "python" | "java") => {
+  const handleLanguageChange = (newLanguage: LanguageType) => {
     setLanguage(newLanguage);
     setCode(selectedQuestion.starterCode[newLanguage]);
   };
@@ -50,7 +52,9 @@ function CodeEditor() {
                     <SelectContent>
                       {CODING_QUESTIONS.map((q) => (
                         <SelectItem key={q.id} value={q.id}>
-                          {q.title}
+                          <span className="block max-w-[130px] truncate">
+                            {q.title}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
