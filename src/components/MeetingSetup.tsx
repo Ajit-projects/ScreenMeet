@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
   const [isCameraDisabled, setIsCameraDisabled] = useState(true);
   const [isMicDisabled, setIsMicDisabled] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
   const call = useCall();
 
@@ -24,6 +25,7 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
   }, [isMicDisabled, call.microphone]);
 
   const handleJoin = async () => {
+    setIsJoining(true);
     await call.join();
     onSetupComplete();
   };
@@ -43,6 +45,10 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
             <div className="mt-4 flex-1 min-h-[400px] rounded-xl overflow-hidden bg-muted/50 border relative">
               <div className="absolute inset-0">
                 <VideoPreview className="h-full w-full" />
+              </div>
+              {/* Optional fallback */}
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+                Initializing camera...
               </div>
             </div>
           </Card>
@@ -116,8 +122,8 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
 
                 {/* JOIN Button */}
                 <div className="space-y-3 mt-8">
-                  <Button className="w-full" size="lg" onClick={handleJoin}>
-                    Join Meeting
+                  <Button className="w-full" size="lg" onClick={handleJoin} disabled={isJoining}>
+                    {isJoining ? "Joining..." : "Join Meeting"}
                   </Button>
                   <p className="text-xs text-center text-muted-foreground">
                     Do not worry, our team is super friendly! We want you to succeed. 🎉
