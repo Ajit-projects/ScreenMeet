@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle"
 import { Code2 } from "lucide-react";
@@ -38,4 +40,5 @@ function Navbar() {
     </nav>
   );
 }
+
 export default Navbar;
