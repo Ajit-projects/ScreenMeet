@@ -26,10 +26,14 @@ function MeetingCard({ interview }: { interview: Interview }) {
 
           <Badge
             variant={
-              status === "live" ? "default" : status === "upcoming" ? "secondary" : "outline"
+              status === "live" ? "default" : status === "upcoming" ? "secondary" : status === "completed"
+                ? "outline"
+                : "destructive"
             }
           >
-            {status === "live" ? "Live Now" : status === "upcoming" ? "Upcoming" : "Completed"}
+            {status === "live" ? "Live Now" : status === "upcoming" ? "Upcoming" : status === "completed"
+              ? "Completed"
+              : "Cancelled"}
           </Badge>
         </div>
 
@@ -50,6 +54,12 @@ function MeetingCard({ interview }: { interview: Interview }) {
         {status === "upcoming" && (
           <Button variant="outline" className="w-full" disabled>
             Waiting to Start
+          </Button>
+        )}
+
+        {status === "completed" && (
+          <Button variant="ghost" className="w-full" disabled>
+            Interview Completed
           </Button>
         )}
       </CardContent>

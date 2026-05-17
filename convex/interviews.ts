@@ -145,3 +145,25 @@ export const updateInterview = mutation({
     });
   },
 });
+
+export const cancelInterview = mutation({
+  args: {
+    id: v.id("interviews"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const interview = await ctx.db.get(args.id);
+    if (!interview) throw new Error("Interview not found");
+
+    if (interview.createdBy !== identity.subject) {
+      throw new Error("Only the creator can cancel this interview");
+    }
+
+    return await ctx.db.patch(args.id, {
+      status: "cancelled",
+      updatedAt: Date.now(),
+    });
+  },
+});
