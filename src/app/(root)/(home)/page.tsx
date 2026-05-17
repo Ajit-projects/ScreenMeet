@@ -4,7 +4,7 @@ import ActionCard from "@/components/ActionCard";
 import { QUICK_ACTIONS } from "@/constants";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useQuery } from "convex/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import MeetingModal from "@/components/MeetingModal";
@@ -19,6 +19,12 @@ export default function Home() {
   const interviews = useQuery(api.interviews.getMyInterviews);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"start" | "join">();
+
+  useEffect(() => {
+    if (isInterviewer) {
+      router.prefetch("/schedule");
+    }
+  }, [router, isInterviewer]);
 
   const handleQuickAction = (title: string) => {
     switch (title) {
