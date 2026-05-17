@@ -19,9 +19,17 @@ export default defineSchema({
     streamCallId: v.string(),
     candidateId: v.string(),
     interviewerIds: v.array(v.string()),
+
+    // Clerk ID of the interviewer who created the interview
+    createdBy: v.string(),
+
+    // Optional timestamps for auditing
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_candidate_id", ["candidateId"])
-    .index("by_stream_call_id", ["streamCallId"]),
+    .index("by_stream_call_id", ["streamCallId"])
+    .index("by_created_by", ["createdBy"]),
 
   comments: defineTable({
     content: v.string(),
