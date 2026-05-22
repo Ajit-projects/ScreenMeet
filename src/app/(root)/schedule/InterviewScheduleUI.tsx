@@ -233,6 +233,10 @@ function InterviewScheduleUI() {
           },
         });
 
+        // Prevent automatic device activation
+        await call.camera.disable();
+        await call.microphone.disable();
+
         await createInterview({
           title,
           description,
