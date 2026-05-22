@@ -81,6 +81,10 @@ export const getMeetingStatus = (interview: Interview) => {
   const interviewStartTime = interview.startTime;
   const endTime = addHours(interviewStartTime, 1);
 
+  if (interview.status === "cancelled") {
+    return "cancelled";
+  }
+
   if (
     interview.status === "completed" ||
     interview.status === "failed" ||

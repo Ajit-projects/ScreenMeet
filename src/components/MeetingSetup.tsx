@@ -27,6 +27,8 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
   const handleJoin = async () => {
     setIsJoining(true);
     await call.join();
+    await call.camera.disable();
+    await call.microphone.disable();
     onSetupComplete();
   };
 

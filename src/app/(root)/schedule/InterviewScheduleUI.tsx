@@ -147,24 +147,24 @@ function InterviewScheduleUI() {
     setOpen(true);
   };
 
-    const handleCancel = async (interviewId: any) => {
-        const confirmed = window.confirm(
-            "Are you sure you want to cancel this interview?"
-        );
+  const handleCancel = async (interviewId: any) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this interview?"
+    );
 
-        if (!confirmed) return;
+    if (!confirmed) return;
 
-        try {
-            await cancelInterview({
-                id: interviewId,
-            });
+    try {
+      await cancelInterview({
+        id: interviewId,
+      });
 
-            toast.success("Interview cancelled successfully");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to cancel interview");
-        }
-    };
+      toast.success("Interview cancelled successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to cancel interview");
+    }
+  };
 
   const handleSubmit = async () => {
     if (!client || !user) return;
@@ -519,34 +519,13 @@ function InterviewScheduleUI() {
       ) : interviews.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {interviews.map((interview) => (
-            <div
+            <MeetingCard
               key={interview._id}
-              className="relative"
-            >
-              <MeetingCard interview={interview} />
-
-                  {interview.createdBy === user?.id && (
-                      <div className="absolute top-3 right-3 z-10 flex gap-2">
-                          {/* Edit Button */}
-                          <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={() => handleEditInterview(interview)}
-                          >
-                              <PencilIcon className="size-4" />
-                          </Button>
-
-                          {/* Cancel/Delete Button */}
-                          <Button
-                              size="icon"
-                              variant="destructive"
-                              onClick={() => handleCancel(interview._id)}
-                          >
-                              <Trash2Icon className="size-4" />
-                          </Button>
-                      </div>
-                  )}
-              </div>
+              interview={interview}
+              canManage={interview.createdBy === user?.id}
+              onEdit={() => handleEditInterview(interview)}
+              onCancel={() => handleCancel(interview._id)}
+            />
           ))}
         </div>
       ) : (

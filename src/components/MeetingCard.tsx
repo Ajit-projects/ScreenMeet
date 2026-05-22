@@ -3,13 +3,25 @@ import { Doc } from "../../convex/_generated/dataModel";
 import { getMeetingStatus } from "@/lib/utils";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
 type Interview = Doc<"interviews">;
 
-function MeetingCard({ interview }: { interview: Interview }) {
+type MeetingCardProps = {
+  interview: Interview;
+  onEdit?: () => void;
+  onCancel?: () => void;
+  canManage?: boolean;
+};
+
+function MeetingCard({
+  interview,
+  onEdit,
+  onCancel,
+  canManage,
+}: MeetingCardProps) {
   const { joinMeeting } = useMeetingActions();
 
   const status = getMeetingStatus(interview);
@@ -18,23 +30,55 @@ function MeetingCard({ interview }: { interview: Interview }) {
   return (
     <Card>
       <CardHeader className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <CalendarIcon className="h-4 w-4" />
             {formattedDate}
           </div>
 
-          <Badge
-            variant={
-              status === "live" ? "default" : status === "upcoming" ? "secondary" : status === "completed"
-                ? "outline"
-                : "destructive"
-            }
-          >
-            {status === "live" ? "Live Now" : status === "upcoming" ? "Upcoming" : status === "completed"
-              ? "Completed"
-              : "Cancelled"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant={
+                status === "live"
+                  ? "default"
+                  : status === "upcoming"
+                    ? "secondary"
+                    : status === "completed"
+                      ? "outline"
+                      : "destructive"
+              }
+            >
+              {status === "live"
+                ? "Live Now"
+                : status === "upcoming"
+                  ? "Upcoming"
+                  : status === "completed"
+                    ? "Completed"
+                    : "Cancelled"}
+            </Badge>
+
+            {canManage && status !== "cancelled" && (
+              <>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8"
+                  onClick={onEdit}
+                >
+                  <PencilIcon className="size-4" />
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  className="h-8 w-8"
+                  onClick={onCancel}
+                >
+                  <Trash2Icon className="size-4" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         <CardTitle>{interview.title}</CardTitle>
