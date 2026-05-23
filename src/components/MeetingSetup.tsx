@@ -120,11 +120,11 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background/95">
+    <div className="min-h-screen p-6 bg-background/95 overflow-y-auto">
       <div className="w-full max-w-[1200px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* VIDEO PREVIEW CONTAINER */}
-          <Card className="md:col-span-1 p-6 flex flex-col">
+          <Card className="md:sticky md:top-6 p-6 flex flex-col">
             <div>
               <h1 className="text-xl font-semibold mb-1">Camera Preview</h1>
               <p className="text-sm text-muted-foreground">Make sure you look good!</p>
@@ -148,8 +148,8 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
 
           {/* CARD CONTROLS */}
 
-          <Card className="md:col-span-1 p-6">
-            <div className="h-full flex flex-col">
+          <Card className="md:col-span-1 p-6 overflow-visible relative z-20">
+            <div className="h-full flex flex-col overflow-visible relative">
               {/* MEETING DETAILS  */}
               <div>
                 <h2 className="text-xl font-semibold mb-1">Meeting Details</h2>
@@ -199,17 +199,21 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                   </div>
 
                   {/* DEVICE SETTINGS */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between relative z-50">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                         <SettingsIcon className="h-5 w-5 text-primary" />
                       </div>
                       <div>
                         <p className="font-medium">Settings</p>
-                        <p className="text-sm text-muted-foreground">Configure devices</p>
+                        <p className="text-sm text-muted-foreground">
+                          Configure devices
+                        </p>
                       </div>
                     </div>
-                    <DeviceSettings />
+                    <div className="stream-device-settings">
+                      <DeviceSettings />
+                    </div>
                   </div>
                 </div>
 

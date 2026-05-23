@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "./globals.css";
+import "@/styles/streamDeviceSettings.css";
 import ConvexClerkProvider from "@/components/providers/ConvexClerkProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer"

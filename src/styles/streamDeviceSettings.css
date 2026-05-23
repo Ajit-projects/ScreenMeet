@@ -1,0 +1,77 @@
+/* STREAM DEVICE SETTINGS CONTAINER */
+.stream-device-settings {
+  position: relative;
+  overflow: visible;
+  z-index: 999;
+}
+
+/* MAIN DROPDOWN PANEL */
+.stream-device-settings .str-video__device-settings {
+  max-height: 320px;
+  overflow-y: auto !important;
+
+  border-radius: 16px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12),
+    0 2px 10px rgba(0, 0, 0, 0.08);
+
+  padding: 8px;
+}
+
+/* CUSTOM SCROLLBAR */
+.stream-device-settings .str-video__device-settings::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stream-device-settings .str-video__device-settings::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 999px;
+}
+
+/* REMOVE INTERNAL BORDERS / EXTRA LINES */
+.stream-device-settings .str-video__device-settings-content,
+.stream-device-settings .str-video__audio-settings,
+.stream-device-settings .str-video__video-settings,
+.stream-device-settings .str-video__option,
+.stream-device-settings .str-video__device-selector {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* REMOVE EXTRA DIVIDERS */
+.stream-device-settings hr,
+.stream-device-settings .str-video__divider,
+.stream-device-settings [class*="divider"] {
+  display: none !important;
+}
+
+/* CLEANER OPTION SPACING */
+.stream-device-settings .str-video__option,
+.stream-device-settings .str-video__device-selector {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-radius: 10px;
+}
+
+/* HOVER */
+.stream-device-settings .str-video__option:hover,
+.stream-device-settings .str-video__device-selector:hover {
+  background: hsl(var(--muted) / 0.6);
+}
+
+/* FIX CLIPPING */
+.stream-device-settings .str-video__menu-container,
+.stream-device-settings .str-video__dropdown-menu {
+  overflow: visible !important;
+  z-index: 9999 !important;
+}
+
+/* REMOVE UGLY DISABLED BACKGROUNDS */
+.stream-device-settings .str-video__option--disabled,
+.stream-device-settings [aria-disabled="true"] {
+  background: transparent !important;
+  opacity: 0.7;
+}
