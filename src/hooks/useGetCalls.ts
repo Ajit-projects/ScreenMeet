@@ -17,10 +17,16 @@ const useGetCalls = () => {
       try {
         const { calls } = await client.queryCalls({
           sort: [{ field: "starts_at", direction: -1 }],
+
           filter_conditions: {
             starts_at: { $exists: true },
-            $or: [{ created_by_user_id: user.id }, { members: { $in: [user.id] } }],
+            $or: [
+              { created_by_user_id: user.id },
+              { members: { $in: [user.id] } },
+            ],
           },
+
+          watch: false,
         });
 
         setCalls(calls);
@@ -36,16 +42,34 @@ const useGetCalls = () => {
 
   const now = new Date();
 
-  const endedCalls = calls?.filter(({ state: { startsAt, endedAt } }: Call) => {
-    return (startsAt && new Date(startsAt) < now) || !!endedAt;
+  const endedCalls = calls?.filter((call: Call) => {
+    const startsAt = call.state?.startsAt;
+    const endedAt = call.state?.endedAt;
+
+    return (
+      (startsAt && new Date(startsAt) < now) ||
+      !!endedAt
+    );
   });
 
-  const upcomingCalls = calls?.filter(({ state: { startsAt } }: Call) => {
-    return startsAt && new Date(startsAt) > now;
+  const upcomingCalls = calls?.filter((call: Call) => {
+    const startsAt = call.state?.startsAt;
+
+    return (
+      startsAt &&
+      new Date(startsAt) > now
+    );
   });
 
-  const liveCalls = calls?.filter(({ state: { startsAt, endedAt } }: Call) => {
-    return startsAt && new Date(startsAt) < now && !endedAt;
+  const liveCalls = calls?.filter((call: Call) => {
+    const startsAt = call.state?.startsAt;
+    const endedAt = call.state?.endedAt;
+
+    return (
+      startsAt &&
+      new Date(startsAt) < now &&
+      !endedAt
+    );
   });
 
   return { calls, endedCalls, upcomingCalls, liveCalls, isLoading };
