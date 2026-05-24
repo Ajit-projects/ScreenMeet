@@ -7,8 +7,8 @@ import { Button } from "./ui/button";
 import toast from "react-hot-toast";
 
 function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
-  const [isCameraDisabled, setIsCameraDisabled] = useState(true);
-  const [isMicDisabled, setIsMicDisabled] = useState(true);
+  const [isCameraEnabled, setIsCameraEnabled] = useState(false);
+  const [isMicEnabled, setIsMicEnabled] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [isCameraLoading, setIsCameraLoading] = useState(false);
 
@@ -19,37 +19,77 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
   if (!call) return null;
 
   useEffect(() => {
-    const handleCamera = async () => {
+    setIsCameraEnabled(false);
+    setIsMicEnabled(false);
+  }, []);
+
+  useEffect(() => {
+    let cameraPermission: PermissionStatus;
+    let micPermission: PermissionStatus;
+
+    const setupPermissionListeners = async () => {
       try {
-        if (isCameraDisabled) {
-          await call.camera.disable();
-          setIsCameraLoading(false);
-        } else {
-          setIsCameraLoading(true);
+        // CAMERA PERMISSION
+        cameraPermission = await navigator.permissions.query({
+          name: "camera" as PermissionName,
+        });
 
-          await call.camera.enable();
+        // MIC PERMISSION
+        micPermission = await navigator.permissions.query({
+          name: "microphone" as PermissionName,
+        });
 
-          // Small delay for Stream video initialization
-          setTimeout(() => {
-            setIsCameraLoading(false);
-          }, 500);
-        }
+        cameraPermission.onchange = async () => {
+          try {
+            if (cameraPermission.state === "granted") {
+              setIsCameraEnabled(true);
+            }
+
+            if (cameraPermission.state === "denied") {
+              setIsCameraEnabled(false);
+            }
+          } catch (error) {
+            console.error(error);
+
+            setIsCameraEnabled(false);
+          }
+        };
+
+        micPermission.onchange = async () => {
+          try {
+            if (micPermission.state === "granted") {
+              await call.microphone.disable();
+              await call.microphone.enable();
+
+              setIsMicEnabled(true);
+            }
+
+            if (micPermission.state === "denied") {
+              setIsMicEnabled(false);
+            }
+          } catch (error) {
+            console.error(error);
+
+            setIsMicEnabled(false);
+          }
+        };
       } catch (error) {
         console.error(error);
-        setIsCameraLoading(false);
       }
     };
 
-    handleCamera();
-  }, [isCameraDisabled]);
+    setupPermissionListeners();
 
-  useEffect(() => {
-    if (isMicDisabled) {
-      call.microphone.disable();
-    } else {
-      call.microphone.enable();
-    }
-  }, [isMicDisabled]);
+    return () => {
+      if (cameraPermission) {
+        cameraPermission.onchange = null;
+      }
+
+      if (micPermission) {
+        micPermission.onchange = null;
+      }
+    };
+  }, [call]);
 
   const handleJoin = async () => {
     try {
@@ -119,6 +159,52 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
     }
   };
 
+  const handleCameraToggle = async (checked: boolean) => {
+    try {
+      setIsCameraLoading(true);
+
+      if (checked) {
+        await call.camera.enable();
+        setIsCameraEnabled(true);
+      } else {
+        await call.camera.disable();
+        setIsCameraEnabled(false);
+      }
+    } catch (error) {
+      console.error(error);
+
+      setIsCameraEnabled(false);
+
+      toast.error(
+        "Camera permission denied or unavailable"
+      );
+    } finally {
+      setTimeout(() => {
+        setIsCameraLoading(false);
+      }, 300);
+    }
+  };
+
+  const handleMicToggle = async (checked: boolean) => {
+    try {
+      if (checked) {
+        await call.microphone.enable();
+        setIsMicEnabled(true);
+      } else {
+        await call.microphone.disable();
+        setIsMicEnabled(false);
+      }
+    } catch (error) {
+      console.error(error);
+
+      setIsMicEnabled(false);
+
+      toast.error(
+        "Microphone permission denied or unavailable"
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen p-6 bg-background/95 overflow-y-auto">
       <div className="w-full max-w-[1200px] mx-auto">
@@ -132,13 +218,13 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
 
             {/* VIDEO PREVIEW */}
             <div className="mt-4 flex-1 min-h-[400px] rounded-xl overflow-hidden bg-muted/50 border relative">
-              {isCameraDisabled ? (
-                <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-                  Camera is turned off
-                </div>
-              ) : isCameraLoading ? (
+              {isCameraLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
                   Starting camera...
+                </div>
+              ) : !isCameraEnabled ? (
+                <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+                  Camera is turned off
                 </div>
               ) : (
                 <VideoPreview className="h-full w-full" />
@@ -167,13 +253,13 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                       <div>
                         <p className="font-medium">Camera</p>
                         <p className="text-sm text-muted-foreground">
-                          {isCameraDisabled ? "Off" : "On"}
+                          {isCameraEnabled ? "On" : "Off"}
                         </p>
                       </div>
                     </div>
                     <Switch
-                      checked={!isCameraDisabled}
-                      onCheckedChange={(checked) => setIsCameraDisabled(!checked)}
+                      checked={isCameraEnabled}
+                      onCheckedChange={handleCameraToggle}
                       className="data-[state=unchecked]:bg-zinc-600"
                     />
                   </div>
@@ -187,13 +273,13 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                       <div>
                         <p className="font-medium">Microphone</p>
                         <p className="text-sm text-muted-foreground">
-                          {isMicDisabled ? "Off" : "On"}
+                          {isMicEnabled ? "On" : "Off"}
                         </p>
                       </div>
                     </div>
                     <Switch
-                      checked={!isMicDisabled}
-                      onCheckedChange={(checked) => setIsMicDisabled(!checked)}
+                      checked={isMicEnabled}
+                      onCheckedChange={handleMicToggle}
                       className="data-[state=unchecked]:bg-zinc-600"
                     />
                   </div>
