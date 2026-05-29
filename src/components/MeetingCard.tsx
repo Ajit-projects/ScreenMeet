@@ -14,6 +14,7 @@ type MeetingCardProps = {
   onEdit?: () => void;
   onCancel?: () => void;
   canManage?: boolean;
+  currentTime: number;
 };
 
 function MeetingCard({
@@ -21,11 +22,17 @@ function MeetingCard({
   onEdit,
   onCancel,
   canManage,
+  currentTime,
 }: MeetingCardProps) {
   const { joinMeeting } = useMeetingActions();
 
-  const status = getMeetingStatus(interview);
+  const status = getMeetingStatus(interview, currentTime);
   const formattedDate = format(new Date(interview.startTime), "EEEE, MMMM d · h:mm a");
+
+  const canModify =
+    canManage &&
+    status !== "cancelled" &&
+    status !== "completed";
 
   return (
     <Card>
@@ -57,7 +64,7 @@ function MeetingCard({
                     : "Cancelled"}
             </Badge>
 
-            {canManage && status !== "cancelled" && (
+            {canModify && (
               <>
                 <Button
                   size="icon"

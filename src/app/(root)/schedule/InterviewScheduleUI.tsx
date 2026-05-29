@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useMutation, useQuery } from "convex/react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { api } from "../../../../convex/_generated/api";
 import toast from "react-hot-toast";
 
@@ -28,11 +28,13 @@ import {
 } from "@/components/ui/select";
 
 import UserInfo from "@/components/UserInfo";
-import { Loader2Icon, PencilIcon, XIcon, Trash2Icon } from "lucide-react";
+import { Loader2Icon, XIcon} from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { TIME_SLOTS } from "@/constants";
 import MeetingCard from "@/components/MeetingCard";
 import InterviewCardSkeleton from "./InterviewCardSkeleton";
+import { createMeetingDate } from "@/lib/utils";
+import useCurrentTime from "@/hooks/useCurrentTime";
 
 function InterviewScheduleUI() {
   const client = useStreamVideoClient();
@@ -52,6 +54,8 @@ function InterviewScheduleUI() {
   const [editingInterviewId, setEditingInterviewId] = useState<
     string | null
   >(null);
+
+  const currentTime = useCurrentTime();
 
   const candidates =
     users?.filter((u) => u.role === "candidate") ?? [];
@@ -185,12 +189,24 @@ function InterviewScheduleUI() {
     }
 
     if (formData.title.length > 100) {
-      toast.error("Interview title is required");
+      toast.error("Interview title must be under 100 characters");
       return;
     }
 
     if (formData.description.length > 500) {
       toast.error("Description too long");
+      return;
+    }
+
+    const meetingDate = createMeetingDate(
+      formData.date,
+      formData.time
+    );
+
+    const now = new Date();
+
+    if (meetingDate <= now) {
+      toast.error("Please select a future time");
       return;
     }
 
@@ -200,28 +216,10 @@ function InterviewScheduleUI() {
       const {
         title,
         description,
-        date,
-        time,
         candidateId,
         interviewerIds,
       } = formData;
 
-      const [hours, minutes] = time.split(":");
-
-      const meetingDate = new Date(date);
-
-      meetingDate.setHours(
-        parseInt(hours),
-        parseInt(minutes),
-        0
-      );
-
-      const now = new Date();
-
-      if (meetingDate <= now) {
-        toast.error("Please select a future time");
-        return;
-      }
       /**
        * EDIT INTERVIEW
        */
@@ -553,6 +551,7 @@ function InterviewScheduleUI() {
               canManage={interview.createdBy === user?.id}
               onEdit={() => handleEditInterview(interview)}
               onCancel={() => handleCancel(interview._id)}
+              currentTime={currentTime}
             />
           ))}
         </div>

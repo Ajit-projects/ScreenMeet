@@ -11,6 +11,7 @@ import MeetingModal from "@/components/MeetingModal";
 import LoaderUI from "@/components/LoaderUI";
 import { Loader2Icon } from "lucide-react";
 import MeetingCard from "@/components/MeetingCard";
+import useCurrentTime from "@/hooks/useCurrentTime";
 
 export default function Home() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function Home() {
   const interviews = useQuery(api.interviews.getMyInterviews);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"start" | "join">();
+  const currentTime = useCurrentTime();
 
   useEffect(() => {
     if (isInterviewer) {
@@ -91,7 +93,7 @@ export default function Home() {
             ) : interviews.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {interviews.map((interview) => (
-                 <MeetingCard key={interview._id} interview={interview} />
+                 <MeetingCard key={interview._id} interview={interview} currentTime={currentTime}/>
                 ))}
               </div>
             ) : (

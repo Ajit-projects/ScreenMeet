@@ -76,9 +76,14 @@ export const calculateRecordingDuration = (startTime: string, endTime: string) =
   return `${duration.seconds} seconds`;
 };
 
-export const getMeetingStatus = (interview: Interview) => {
-  const now = new Date();
-  const interviewStartTime = interview.startTime;
+export const getMeetingStatus = (
+  interview: Interview,
+  currentTime: number
+) => {
+  const now = new Date(currentTime);
+
+  const interviewStartTime = new Date(interview.startTime);
+
   const endTime = addHours(interviewStartTime, 1);
 
   if (interview.status === "cancelled") {
@@ -89,9 +94,40 @@ export const getMeetingStatus = (interview: Interview) => {
     interview.status === "completed" ||
     interview.status === "failed" ||
     interview.status === "succeeded"
-  )
+  ) {
     return "completed";
-  if (isWithinInterval(now, { start: interviewStartTime, end: endTime })) return "live";
-  if (isBefore(now, interviewStartTime)) return "upcoming";
+  }
+
+  if (
+    isWithinInterval(now, {
+      start: interviewStartTime,
+      end: endTime,
+    })
+  ) {
+    return "live";
+  }
+
+  if (isBefore(now, interviewStartTime)) {
+    return "upcoming";
+  }
+
   return "completed";
+};
+
+export const createMeetingDate = (
+  date: Date,
+  time: string
+) => {
+  const [hours, minutes] = time.split(":");
+
+  const meetingDate = new Date(date);
+
+  meetingDate.setHours(
+    parseInt(hours),
+    parseInt(minutes),
+    0,
+    0
+  );
+
+  return meetingDate;
 };
