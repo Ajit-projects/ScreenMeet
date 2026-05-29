@@ -49,6 +49,33 @@ export const getInterviewByStreamCallId = query({
   },
 });
 
+function validateInterviewData(data: {
+  title: string;
+  description?: string;
+  startTime: number;
+  interviewerIds: string[];
+}) {
+  if (!data.title.trim()) {
+    throw new Error("Interview title is required");
+  }
+
+  if (data.title.length > 100) {
+    throw new Error("Title too long");
+  }
+
+  if (data.description && data.description.length > 500) {
+    throw new Error("Description too long");
+  }
+
+  if (data.startTime <= Date.now()) {
+    throw new Error("Interview must be scheduled in future");
+  }
+
+  if (data.interviewerIds.length === 0) {
+    throw new Error("At least one interviewer required");
+  }
+}
+
 export const createInterview = mutation({
   args: {
     title: v.string(),
@@ -62,6 +89,8 @@ export const createInterview = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
+
+    validateInterviewData(args);
 
     return await ctx.db.insert("interviews", {
       ...args,
@@ -138,6 +167,8 @@ export const updateInterview = mutation({
     }
 
     const { id, ...updates } = args;
+
+    validateInterviewData(args);
 
     return await ctx.db.patch(id, {
       ...updates,

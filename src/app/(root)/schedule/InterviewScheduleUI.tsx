@@ -179,6 +179,21 @@ function InterviewScheduleUI() {
       return;
     }
 
+    if (!formData.title.trim()) {
+      toast.error("Interview title is required");
+      return;
+    }
+
+    if (formData.title.length > 100) {
+      toast.error("Interview title is required");
+      return;
+    }
+
+    if (formData.description.length > 500) {
+      toast.error("Description too long");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -201,6 +216,12 @@ function InterviewScheduleUI() {
         0
       );
 
+      const now = new Date();
+
+      if (meetingDate <= now) {
+        toast.error("Please select a future time");
+        return;
+      }
       /**
        * EDIT INTERVIEW
        */
@@ -441,9 +462,12 @@ function InterviewScheduleUI() {
                         date,
                       })
                     }
-                    disabled={(date) =>
-                      date < new Date()
-                    }
+                    disabled={(date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+
+                      return date < today;
+                    }}
                     className="rounded-md border"
                   />
                 </div>
