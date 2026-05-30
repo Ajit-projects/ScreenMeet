@@ -32,7 +32,7 @@ function MeetingCard({
   const canModify =
     canManage &&
     status !== "cancelled" &&
-    status !== "completed";
+    status !== "completed" && status !== "live";
 
   return (
     <Card>

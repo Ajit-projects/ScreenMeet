@@ -306,7 +306,7 @@ function MeetingSetup({ onSetupComplete }: { onSetupComplete: () => void }) {
                 {/* JOIN Button */}
                 <div className="space-y-3 mt-8">
                   <Button className="w-full" size="lg" onClick={handleJoin} disabled={isJoining}>
-                    {isJoining ? "Joining..." : "Join Meeting"}
+                    {isJoining ? "Entering..." : "Enter Meeting"}
                   </Button>
                   <p className="text-xs text-center text-muted-foreground">
                     Do not worry, our team is super friendly! We want you to succeed. 🎉
