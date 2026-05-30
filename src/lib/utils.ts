@@ -1,5 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
-import { addHours, intervalToDuration, isAfter, isBefore, isWithinInterval } from "date-fns";
+import { addMinutes, intervalToDuration, isAfter, isBefore, isWithinInterval } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { Doc } from "../../convex/_generated/dataModel";
 
@@ -84,7 +84,10 @@ export const getMeetingStatus = (
 
   const interviewStartTime = new Date(interview.startTime);
 
-  const endTime = addHours(interviewStartTime, 1);
+  const endTime = addMinutes(
+    interviewStartTime,
+    interview.expectedDuration
+);
 
   if (interview.status === "cancelled") {
     return "cancelled";
