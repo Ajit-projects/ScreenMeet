@@ -54,6 +54,7 @@ function validateInterviewData(data: {
   description?: string;
   startTime: number;
   interviewerIds: string[];
+  expectedDuration: number;
 }) {
   if (!data.title.trim()) {
     throw new Error("Interview title is required");
@@ -74,6 +75,16 @@ function validateInterviewData(data: {
   if (data.interviewerIds.length === 0) {
     throw new Error("At least one interviewer required");
   }
+
+  if (!data.expectedDuration) {
+    throw new Error("Interview duration is required");
+  }
+
+  const validDurations = [15, 30, 45, 60, 90, 120];
+
+  if (!validDurations.includes(data.expectedDuration)) {
+    throw new Error("Invalid interview duration");
+  }
 }
 
 export const createInterview = mutation({
@@ -85,6 +96,7 @@ export const createInterview = mutation({
     streamCallId: v.string(),
     candidateId: v.string(),
     interviewerIds: v.array(v.string()),
+    expectedDuration: v.number(),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -149,6 +161,7 @@ export const updateInterview = mutation({
     startTime: v.number(),
     candidateId: v.string(),
     interviewerIds: v.array(v.string()),
+    expectedDuration: v.number(),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();

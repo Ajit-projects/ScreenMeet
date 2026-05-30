@@ -3,7 +3,7 @@ import { Doc } from "../../convex/_generated/dataModel";
 import { getMeetingStatus } from "@/lib/utils";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { CalendarIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { CalendarIcon, PencilIcon, Trash2Icon, Clock3Icon } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
@@ -38,9 +38,16 @@ function MeetingCard({
     <Card>
       <CardHeader className="space-y-2">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarIcon className="h-4 w-4" />
-            {formattedDate}
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4" />
+              {formattedDate}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Clock3Icon className="h-4 w-4" />
+              {interview.expectedDuration} min
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

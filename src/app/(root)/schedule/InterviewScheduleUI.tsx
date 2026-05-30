@@ -69,6 +69,7 @@ function InterviewScheduleUI() {
       description: "",
       date: new Date(),
       time: "09:00",
+      expectedDuration: 60,
       candidateId: "",
       interviewerIds: user?.id ? [user.id] : [],
     }),
@@ -144,6 +145,7 @@ function InterviewScheduleUI() {
       description: interview.description || "",
       date: interviewDate,
       time: `${hours}:${minutes}`,
+      expectedDuration: interview.expectedDuration ?? 60,
       candidateId: interview.candidateId,
       interviewerIds: interview.interviewerIds,
     });
@@ -198,6 +200,11 @@ function InterviewScheduleUI() {
       return;
     }
 
+    if (!formData.expectedDuration) {
+      toast.error("Please select interview duration");
+      return;
+    }
+
     const meetingDate = createMeetingDate(
       formData.date,
       formData.time
@@ -216,6 +223,7 @@ function InterviewScheduleUI() {
       const {
         title,
         description,
+        expectedDuration,
         candidateId,
         interviewerIds,
       } = formData;
@@ -229,6 +237,7 @@ function InterviewScheduleUI() {
           title,
           description,
           startTime: meetingDate.getTime(),
+          expectedDuration,
           candidateId,
           interviewerIds,
         });
@@ -260,6 +269,7 @@ function InterviewScheduleUI() {
           title,
           description,
           startTime: meetingDate.getTime(),
+          expectedDuration,
           status: "upcoming",
           streamCallId: id,
           candidateId,
@@ -501,6 +511,52 @@ function InterviewScheduleUI() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Expected Duration
+                </label>
+
+                <Select
+                  value={String(formData.expectedDuration)}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      expectedDuration: Number(value),
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="15">
+                      15 Minutes
+                    </SelectItem>
+
+                    <SelectItem value="30">
+                      30 Minutes
+                    </SelectItem>
+
+                    <SelectItem value="45">
+                      45 Minutes
+                    </SelectItem>
+
+                    <SelectItem value="60">
+                      1 Hour
+                    </SelectItem>
+
+                    <SelectItem value="90">
+                      1 Hour 30 Minutes
+                    </SelectItem>
+
+                    <SelectItem value="120">
+                      2 Hours
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* ACTIONS */}
