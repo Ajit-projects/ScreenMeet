@@ -1,11 +1,27 @@
 "use client";
 
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import RoleSelection from "./RoleSelection";
+import LoaderUI from "./LoaderUI";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
+    const currentUser = useQuery(
+        api.users.getCurrentUser
+    );
+    
     return (
         <>
-            <SignedIn>{children}</SignedIn>
+            <SignedIn>
+                {currentUser === undefined ? (
+                    <LoaderUI />
+                ) : currentUser?.role === "pending" ? (
+                    <RoleSelection />
+                ) : (
+                    children
+                )}
+            </SignedIn>
 
             <SignedOut>
                 <div className="flex items-center justify-center h-[60vh] fade-in">
