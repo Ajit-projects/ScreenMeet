@@ -35,6 +35,7 @@ import MeetingCard from "@/components/MeetingCard";
 import InterviewCardSkeleton from "./InterviewCardSkeleton";
 import { createMeetingDate } from "@/lib/utils";
 import useCurrentTime from "@/hooks/useCurrentTime";
+import { getMeetingStatus } from "@/lib/utils";
 
 function InterviewScheduleUI() {
   const client = useStreamVideoClient();
@@ -62,6 +63,19 @@ function InterviewScheduleUI() {
 
   const interviewers =
     users?.filter((u) => u.role === "interviewer") ?? [];
+
+  const activeInterviews =
+    interviews?.filter((interview) => {
+      const status = getMeetingStatus(
+        interview,
+        currentTime
+      );
+
+      return (
+        status === "upcoming" ||
+        status === "live"
+      );
+    }) ?? [];
 
   const initialFormState = useMemo(
     () => ({
@@ -598,9 +612,9 @@ function InterviewScheduleUI() {
             <InterviewCardSkeleton key={i} />
           ))}
         </div>
-      ) : interviews.length > 0 ? (
+      ) : activeInterviews.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {interviews.map((interview) => (
+          {activeInterviews.map((interview) => (
             <MeetingCard
               key={interview._id}
               interview={interview}
@@ -613,7 +627,7 @@ function InterviewScheduleUI() {
         </div>
       ) : (
         <div className="text-center py-12 text-muted-foreground">
-          No interviews scheduled
+          No upcoming interviews scheduled
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import { Clock, Code2, Calendar, Users } from "lucide-react";
 
 export const INTERVIEW_CATEGORY = [
   { id: "upcoming", title: "Upcoming Interviews", variant: "outline" },
+  { id: "live", title: "Ongoing Interviews", variant: "default"},
   { id: "completed", title: "Completed", variant: "secondary" },
   { id: "succeeded", title: "Succeeded", variant: "default" },
   { id: "failed", title: "Failed", variant: "destructive" },

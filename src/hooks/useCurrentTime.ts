@@ -1,8 +1,6 @@
-// hooks/useCurrentTime.ts
-
 import { useEffect, useState } from "react";
 
-function useCurrentTime(intervalMs = 30000) {
+function useCurrentTime(intervalMs = 10000) {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {

@@ -4,8 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import toast from "react-hot-toast";
-import LoaderUI from "@/components/LoaderUI";
-import { getCandidateInfo, groupInterviews } from "@/lib/utils";
+import { getCandidateInfo, groupInterviews, getMeetingStatus } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { INTERVIEW_CATEGORY } from "@/constants";
@@ -16,15 +15,18 @@ import { CalendarIcon, CheckCircle2Icon, ClockIcon, XCircleIcon } from "lucide-r
 import { format } from "date-fns";
 import CommentDialog from "@/components/CommentDialog";
 import DashboardSkeleton from "./DashboardSkeleton";
+import useCurrentTime from "@/hooks/useCurrentTime";
 
 type Interview = Doc<"interviews">;
+type InterviewStatus = "completed" | "succeeded" | "failed" | "cancelled";
 
 function DashboardUI() {
   const users = useQuery(api.users.getUsers);
   const interviews = useQuery(api.interviews.getAllInterviews);
   const updateStatus = useMutation(api.interviews.updateInterviewStatus);
+  const currentTime = useCurrentTime();
 
-  const handleStatusUpdate = async (interviewId: Id<"interviews">, status: string) => {
+  const handleStatusUpdate = async (interviewId: Id<"interviews">, status:InterviewStatus ) => {
     try {
       await updateStatus({ id: interviewId, status });
       toast.success(`Interview marked as ${status}`);
@@ -45,7 +47,7 @@ function DashboardUI() {
         );
     }
 
-  const groupedInterviews = groupInterviews(interviews);
+  const groupedInterviews = groupInterviews(interviews,currentTime);
 
   return (
     <div className="container mx-auto py-10">
@@ -70,9 +72,12 @@ function DashboardUI() {
                   {groupedInterviews[category.id].map((interview: Interview) => {
                     const candidateInfo = getCandidateInfo(users, interview.candidateId);
                     const startTime = new Date(interview.startTime);
+                    const meetingStatus = getMeetingStatus(interview, currentTime);
 
                     return (
-                      <Card className="hover:shadow-md transition-all">
+                        <Card
+                        key={interview._id}
+                        className="hover:shadow-md transition-all">
                         {/* CANDIDATE INFO */}
                         <CardHeader className="p-4">
                           <div className="flex items-center gap-3">
@@ -103,7 +108,7 @@ function DashboardUI() {
 
                         {/* PASS & FAIL BUTTONS */}
                         <CardFooter className="p-4 pt-0 flex flex-col gap-3">
-                          {interview.status === "completed" && (
+                          {meetingStatus === "completed" && (
                             <div className="flex gap-2 w-full">
                               <Button
                                 className="flex-1"
@@ -122,7 +127,9 @@ function DashboardUI() {
                               </Button>
                             </div>
                           )}
-                          <CommentDialog interviewId={interview._id} />
+                          {meetingStatus === "completed" && (
+                            <CommentDialog interviewId={interview._id} />
+                          )}
                         </CardFooter>
                       </Card>
                     );

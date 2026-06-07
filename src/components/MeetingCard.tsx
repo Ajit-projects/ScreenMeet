@@ -29,10 +29,7 @@ function MeetingCard({
   const status = getMeetingStatus(interview, currentTime);
   const formattedDate = format(new Date(interview.startTime), "EEEE, MMMM d · h:mm a");
 
-  const canModify =
-    canManage &&
-    status !== "cancelled" &&
-    status !== "completed" && status !== "live";
+  const canModify = canManage && status === "upcoming";
 
   return (
     <Card>
@@ -57,9 +54,11 @@ function MeetingCard({
                   ? "default"
                   : status === "upcoming"
                     ? "secondary"
-                    : status === "completed"
-                      ? "outline"
-                      : "destructive"
+                    : status === "succeeded"
+                      ? "default"
+                      : status === "failed"
+                        ? "destructive"
+                        : "outline"
               }
             >
               {status === "live"
@@ -68,7 +67,11 @@ function MeetingCard({
                   ? "Upcoming"
                   : status === "completed"
                     ? "Completed"
-                    : "Cancelled"}
+                    : status === "succeeded"
+                      ? "Passed"
+                      : status === "failed"
+                        ? "Failed"
+                        : "Cancelled"}
             </Badge>
 
             {canModify && (
@@ -97,9 +100,9 @@ function MeetingCard({
 
         <CardTitle>{interview.title}</CardTitle>
 
-        {interview.description && (
-          <CardDescription className="line-clamp-2">{interview.description}</CardDescription>
-        )}
+        <CardDescription className="line-clamp-2 min-h-[40px]">
+          {interview.description || " "}
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -118,6 +121,18 @@ function MeetingCard({
         {status === "completed" && (
           <Button variant="ghost" className="w-full" disabled>
             Interview Completed
+          </Button>
+        )}
+
+        {status === "succeeded" && (
+          <Button variant="ghost" disabled className="w-full">
+            Candidate Passed
+          </Button>
+        )}
+
+        {status === "failed" && (
+          <Button variant="ghost" disabled className="w-full">
+            Candidate Failed
           </Button>
         )}
       </CardContent>

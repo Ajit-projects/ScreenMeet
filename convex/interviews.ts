@@ -115,11 +115,19 @@ export const createInterview = mutation({
 export const updateInterviewStatus = mutation({
   args: {
     id: v.id("interviews"),
-    status: v.string(),
+    status: v.union(
+      v.literal("completed"),
+      v.literal("succeeded"),
+      v.literal("failed"),
+      v.literal("cancelled")
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
 
     const interview = await ctx.db.get(args.id);
 
@@ -138,6 +146,17 @@ export const updateInterviewStatus = mutation({
 
     if (!hasAccess) {
       throw new Error("Unauthorized");
+    }
+
+    // Prevent evaluating interviews that are not completed yet
+    if (
+      (args.status === "succeeded" ||
+        args.status === "failed") &&
+      interview.status !== "completed"
+    ) {
+      throw new Error(
+        "Interview must be completed before evaluation"
+      );
     }
 
     return await ctx.db.patch(args.id, {

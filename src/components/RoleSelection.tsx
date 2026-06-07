@@ -40,11 +40,11 @@ function RoleSelection() {
       <div className="rounded-xl border bg-card p-8 shadow-sm">
         <div className="text-center space-y-3">
           <h1 className="text-3xl font-bold">
-            Welcome to ScreenMeet
+            Complete Your Profile
           </h1>
 
           <p className="text-muted-foreground">
-            Select your role to continue.
+            Select your role to access ScreenMeet.
             This choice can only be made once.
           </p>
         </div>
@@ -73,7 +73,7 @@ function RoleSelection() {
               {loadingRole === "candidate" ? (
                 <Loader2Icon className="size-4 animate-spin" />
               ) : (
-                "Join as a Candidate"
+                "Join as Candidate"
               )}
             </Button>
           </div>
@@ -101,7 +101,7 @@ function RoleSelection() {
               {loadingRole === "interviewer" ? (
                 <Loader2Icon className="size-4 animate-spin" />
               ) : (
-                "Join as a Interviewer"
+                "Join as Interviewer"
               )}
             </Button>
           </div>
