@@ -53,6 +53,7 @@ export const addComment = mutation({
       await ctx.db.patch(existingComment._id, {
         content: args.content,
         rating: args.rating,
+        updatedAt: Date.now(),
       });
 
       return existingComment._id;

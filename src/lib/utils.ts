@@ -115,7 +115,7 @@ export const getMeetingStatus = (
         return "upcoming";
       }
 
-      return "completed";
+      return "missed";
   }
 };
 

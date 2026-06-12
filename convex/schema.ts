@@ -43,6 +43,7 @@ export default defineSchema({
     rating: v.number(),
     interviewerId: v.string(),
     interviewId: v.id("interviews"),
+    updatedAt: v.optional(v.number()),
   }).index("by_interview_id", ["interviewId"])
     .index("by_interview_and_interviewer", [
       "interviewId",

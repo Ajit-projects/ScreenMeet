@@ -31,6 +31,39 @@ function MeetingCard({
 
   const canModify = canManage && status === "upcoming";
 
+  const statusConfig = {
+    live: {
+      label: "Live Now",
+      variant: "default" as const,
+    },
+    upcoming: {
+      label: "Upcoming",
+      variant: "secondary" as const,
+    },
+    completed: {
+      label: "Completed",
+      variant: "outline" as const,
+    },
+    succeeded: {
+      label: "Passed",
+      variant: "default" as const,
+    },
+    failed: {
+      label: "Failed",
+      variant: "destructive" as const,
+    },
+    missed: {
+      label: "Missed",
+      variant: "destructive" as const,
+    },
+    cancelled: {
+      label: "Cancelled",
+      variant: "outline" as const,
+    },
+  };
+
+  const badgeConfig = statusConfig[status as keyof typeof statusConfig];
+
   return (
     <Card>
       <CardHeader className="space-y-2">
@@ -48,30 +81,8 @@ function MeetingCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge
-              variant={
-                status === "live"
-                  ? "default"
-                  : status === "upcoming"
-                    ? "secondary"
-                    : status === "succeeded"
-                      ? "default"
-                      : status === "failed"
-                        ? "destructive"
-                        : "outline"
-              }
-            >
-              {status === "live"
-                ? "Live Now"
-                : status === "upcoming"
-                  ? "Upcoming"
-                  : status === "completed"
-                    ? "Completed"
-                    : status === "succeeded"
-                      ? "Passed"
-                      : status === "failed"
-                        ? "Failed"
-                        : "Cancelled"}
+            <Badge variant={badgeConfig.variant}>
+              {badgeConfig.label}
             </Badge>
 
             {canModify && (
@@ -133,6 +144,12 @@ function MeetingCard({
         {status === "failed" && (
           <Button variant="ghost" disabled className="w-full">
             Candidate Failed
+          </Button>
+        )}
+
+        {status === "missed" && (
+          <Button variant="ghost" disabled className="w-full">
+            Interview Missed
           </Button>
         )}
       </CardContent>

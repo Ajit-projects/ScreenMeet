@@ -56,6 +56,8 @@ function InterviewScheduleUI() {
     string | null
   >(null);
 
+  const [selectedInterviewer, setSelectedInterviewer] = useState("");
+
   const currentTime = useCurrentTime();
 
   const candidates =
@@ -112,6 +114,8 @@ function InterviewScheduleUI() {
         interviewerIds: [...prev.interviewerIds, interviewerId],
       }));
     }
+
+    setSelectedInterviewer("");
   };
 
   const removeInterviewer = (interviewerId: string) => {
@@ -444,6 +448,7 @@ function InterviewScheduleUI() {
 
                 {availableInterviewers.length > 0 && (
                   <Select
+                    value={selectedInterviewer}
                     onValueChange={addInterviewer}
                   >
                     <SelectTrigger>

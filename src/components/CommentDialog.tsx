@@ -55,7 +55,7 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
           ? "Comment updated"
           : "Comment submitted"
       );
-      
+
       setComment("");
       setRating("3");
       setIsOpen(false);
@@ -118,7 +118,9 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
                             <div>
                               <p className="text-sm font-medium">{interviewer.name}</p>
                               <p className="text-xs text-muted-foreground">
-                                {format(comment._creationTime, "MMM d, yyyy • h:mm a")}
+                                {comment.updatedAt
+                                  ? `Edited ${format(comment.updatedAt, "MMM d, yyyy • h:mm a")}`
+                                  : format(comment._creationTime, "MMM d, yyyy • h:mm a")}
                               </p>
                             </div>
                           </div>

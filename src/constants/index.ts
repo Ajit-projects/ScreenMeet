@@ -6,6 +6,8 @@ export const INTERVIEW_CATEGORY = [
   { id: "completed", title: "Completed", variant: "secondary" },
   { id: "succeeded", title: "Succeeded", variant: "default" },
   { id: "failed", title: "Failed", variant: "destructive" },
+  { id: "missed", title: "Missed Interviews", variant: "destructive" },
+  { id: "cancelled", title: "Cancelled", variant: "destructive" },
 ] as const;
 
 export const TIME_SLOTS = [
