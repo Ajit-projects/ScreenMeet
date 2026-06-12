@@ -40,6 +40,24 @@ export const addComment = mutation({
       throw new Error("Comment too long");
     }
 
+    const existingComment = await ctx.db
+      .query("comments")
+      .withIndex("by_interview_and_interviewer", (q) =>
+        q
+          .eq("interviewId", args.interviewId)
+          .eq("interviewerId", identity.subject)
+      )
+      .unique();
+
+    if (existingComment) {
+      await ctx.db.patch(existingComment._id, {
+        content: args.content,
+        rating: args.rating,
+      });
+
+      return existingComment._id;
+    }
+
     return await ctx.db.insert("comments", {
       interviewId: args.interviewId,
       content: args.content,
@@ -83,5 +101,27 @@ export const getComments = query({
       .collect();
 
     return comments;
+  },
+});
+
+export const getMyComment = query({
+  args: {
+    interviewId: v.id("interviews"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    return await ctx.db
+      .query("comments")
+      .withIndex("by_interview_and_interviewer", (q) =>
+        q
+          .eq("interviewId", args.interviewId)
+          .eq("interviewerId", identity.subject)
+      )
+      .unique();
   },
 });

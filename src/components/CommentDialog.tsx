@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Id } from "../../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -31,6 +31,15 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
   const users = useQuery(api.users.getUsers);
   const existingComments = useQuery(api.comments.getComments, { interviewId });
 
+  const myComment = useQuery(api.comments.getMyComment,{ interviewId }); 
+
+  useEffect(() => {
+    if (myComment) {
+      setComment(myComment.content);
+      setRating(String(myComment.rating));
+    }
+  }, [myComment]);
+
   const handleSubmit = async () => {
     if (!comment.trim()) return toast.error("Please enter comment");
 
@@ -41,7 +50,12 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
         rating: parseInt(rating),
       });
 
-      toast.success("Comment submitted");
+      toast.success(
+        myComment
+          ? "Comment updated"
+          : "Comment submitted"
+      );
+      
       setComment("");
       setRating("3");
       setIsOpen(false);
@@ -69,7 +83,7 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
       <DialogTrigger asChild>
         <Button variant="secondary" className="w-full">
           <MessageSquareIcon className="h-4 w-4 mr-2" />
-          Add Comment
+            {myComment ? "Edit Comment" : "Add Comment"}
         </Button>
       </DialogTrigger>
 
@@ -155,7 +169,9 @@ function CommentDialog({ interviewId }: { interviewId: Id<"interviews"> }) {
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Submit</Button>
+          <Button onClick={handleSubmit}>
+            {myComment ? "Update Comment" : "Submit"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
