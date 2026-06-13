@@ -33,6 +33,7 @@ export default defineSchema({
 
     //expected duration
     expectedDuration: v.number(),
+    rescheduleCount: v.optional(v.number())
   })
     .index("by_candidate_id", ["candidateId"])
     .index("by_stream_call_id", ["streamCallId"])

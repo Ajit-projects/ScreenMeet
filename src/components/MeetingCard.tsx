@@ -152,6 +152,12 @@ function MeetingCard({
             Interview Missed
           </Button>
         )}
+
+        {status === "cancelled" && ( 
+          <Button variant="ghost" disabled className="w-full"> 
+            Interview Cancelled 
+            </Button> 
+        )}
       </CardContent>
     </Card>
   );

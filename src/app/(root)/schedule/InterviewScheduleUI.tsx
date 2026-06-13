@@ -36,6 +36,8 @@ import InterviewCardSkeleton from "./InterviewCardSkeleton";
 import { createMeetingDate } from "@/lib/utils";
 import useCurrentTime from "@/hooks/useCurrentTime";
 import { getMeetingStatus } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 function InterviewScheduleUI() {
   const client = useStreamVideoClient();
@@ -48,17 +50,19 @@ function InterviewScheduleUI() {
   const updateInterview = useMutation(api.interviews.updateInterview);
 
   const cancelInterview = useMutation(api.interviews.cancelInterview);
+  const rescheduleInterview = useMutation(api.interviews.rescheduleInterview);
 
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [editingInterviewId, setEditingInterviewId] = useState<
-    string | null
-  >(null);
+  const [editingInterviewId, setEditingInterviewId] = useState<Id<"interviews"> | null>(null);
 
   const [selectedInterviewer, setSelectedInterviewer] = useState("");
+  const [rescheduleHandled, setRescheduleHandled] = useState(false);
 
   const currentTime = useCurrentTime();
+
+  const router= useRouter();
 
   const candidates =
     users?.filter((u) => u.role === "candidate") ?? [];
@@ -94,6 +98,37 @@ function InterviewScheduleUI() {
 
   const [formData, setFormData] = useState(initialFormState);
 
+  const searchParams = useSearchParams();
+
+  const rescheduleId = searchParams.get("rescheduleId");
+  //editing interview opened from re-schedule
+  const isRescheduleMode = !!rescheduleId;
+
+  useEffect(() => {
+    if (
+      !interviews ||
+      !rescheduleId ||
+      rescheduleHandled
+    ) {
+      return;
+    }
+
+    const interview = interviews.find(
+      (i) => i._id === rescheduleId
+    );
+
+    if (!interview) return;
+
+    setRescheduleHandled(true);
+    handleEditInterview(interview);
+  }, [interviews, rescheduleId, rescheduleHandled]);
+
+  useEffect(() => {
+    if (!rescheduleId) {
+      setRescheduleHandled(false);
+    }
+  }, [rescheduleId]);
+
   const resetForm = () => {
     setFormData(initialFormState);
     setEditingInterviewId(null);
@@ -101,6 +136,12 @@ function InterviewScheduleUI() {
 
   const handleDialogChange = (value: boolean) => {
     setOpen(value);
+
+    if (!value && rescheduleId) {
+      resetForm();
+      router.replace("/schedule");
+      return;
+    }
 
     if (!value) {
       resetForm();
@@ -247,11 +288,21 @@ function InterviewScheduleUI() {
       } = formData;
 
       /**
-       * EDIT INTERVIEW
+       * Re-Scheduled INTERVIEW
        */
-      if (editingInterviewId) {
+      if (editingInterviewId && isRescheduleMode) {
+        await rescheduleInterview({
+          id: editingInterviewId,
+          startTime: meetingDate.getTime(),
+          expectedDuration,
+        });
+        toast.success("Interview rescheduled successfully");
+        router.replace("/schedule");
+      }
+      //edit interview
+      else if (editingInterviewId) {
         await updateInterview({
-          id: editingInterviewId as any,
+          id: editingInterviewId,
           title,
           description,
           startTime: meetingDate.getTime(),
@@ -261,7 +312,8 @@ function InterviewScheduleUI() {
         });
 
         toast.success("Interview updated successfully");
-      } else {
+      }
+      else {
         /**
          * CREATE INTERVIEW
          */
@@ -304,7 +356,9 @@ function InterviewScheduleUI() {
 
       toast.error(
         editingInterviewId
-          ? "Failed to update interview"
+          ? isRescheduleMode
+            ? "Failed to reschedule interview"
+            : "Failed to update interview"
           : "Failed to schedule interview"
       );
     } finally {
@@ -340,9 +394,11 @@ function InterviewScheduleUI() {
           <DialogContent className="sm:max-w-[500px] h-[calc(100vh-200px)] overflow-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingInterviewId
-                  ? "Edit Interview"
-                  : "Schedule Interview"}
+                {isRescheduleMode
+                  ? "Reschedule Interview"
+                  : editingInterviewId
+                    ? "Edit Interview"
+                    : "Schedule Interview"}
               </DialogTitle>
             </DialogHeader>
 
@@ -356,6 +412,7 @@ function InterviewScheduleUI() {
                 <Input
                   placeholder="Interview title"
                   value={formData.title}
+                  disabled={isRescheduleMode}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -373,6 +430,7 @@ function InterviewScheduleUI() {
 
                 <Textarea
                   placeholder="Interview description"
+                  disabled={isRescheduleMode}
                   rows={3}
                   value={formData.description}
                   onChange={(e) =>
@@ -391,6 +449,7 @@ function InterviewScheduleUI() {
                 </label>
 
                 <Select
+                  disabled={isRescheduleMode}
                   value={formData.candidateId}
                   onValueChange={(candidateId) =>
                     setFormData({
@@ -430,7 +489,7 @@ function InterviewScheduleUI() {
                     >
                       <UserInfo user={interviewer} />
 
-                      {interviewer.clerkId !== user?.id && (
+                      {!isRescheduleMode && interviewer.clerkId !== user?.id && (
                         <button
                           onClick={() =>
                             removeInterviewer(
@@ -448,6 +507,7 @@ function InterviewScheduleUI() {
 
                 {availableInterviewers.length > 0 && (
                   <Select
+                    disabled={isRescheduleMode}
                     value={selectedInterviewer}
                     onValueChange={addInterviewer}
                   >
@@ -594,15 +654,19 @@ function InterviewScheduleUI() {
                   {isSubmitting ? (
                     <>
                       <Loader2Icon className="mr-2 size-4 animate-spin" />
-                      {editingInterviewId
-                        ? "Updating..."
-                        : "Scheduling..."}
+                      {isRescheduleMode
+                        ? "Rescheduling..."
+                        : editingInterviewId
+                          ? "Updating..."
+                          : "Scheduling..."
+                      }
                     </>
-                  ) : editingInterviewId ? (
-                    "Update Interview"
-                  ) : (
-                    "Schedule Interview"
-                  )}
+                  ) : isRescheduleMode
+                  ? "Reschedule Interview"
+                  : editingInterviewId
+
+                  ? "Update Interview"
+                  : "Schedule Interview"}
                 </Button>
               </div>
             </div>

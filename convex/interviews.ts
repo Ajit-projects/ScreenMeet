@@ -108,6 +108,7 @@ export const createInterview = mutation({
       ...args,
       createdBy: identity.subject,
       createdAt: Date.now(),
+      rescheduleCount: 0,
     });
   },
 });
@@ -137,15 +138,12 @@ export const updateInterviewStatus = mutation({
 
     const userId = identity.subject;
 
-    // Only interviewers assigned to this interview
-    // or the creator of the interview can update status.
+    // the creator of the interview can update status.
     // Candidates should not be allowed to modify status.
-    const hasAccess =
-      interview.interviewerIds.includes(userId) ||
-      interview.createdBy === userId;
-
-    if (!hasAccess) {
-      throw new Error("Unauthorized");
+    if (interview.createdBy !== userId) {
+      throw new Error(
+        "Only the creator can update interview status"
+      );
     }
 
     // Prevent evaluating interviews that are not completed yet
@@ -226,6 +224,54 @@ export const cancelInterview = mutation({
 
     return await ctx.db.patch(args.id, {
       status: "cancelled",
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const rescheduleInterview = mutation({
+  args: {
+    id: v.id("interviews"),
+    startTime: v.number(),
+    expectedDuration: v.number(),
+  },
+
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const interview = await ctx.db.get(args.id);
+
+    if (!interview) {
+      throw new Error("Interview not found");
+    }
+
+    if (interview.createdBy !== identity.subject) {
+      throw new Error("Only creator can reschedule");
+    }
+
+    if ((interview.rescheduleCount ?? 0) >= 1) {
+      throw new Error("Interview already rescheduled once");
+    }
+
+    if (args.startTime <= Date.now()) {
+      throw new Error(
+        "Interview must be scheduled in future"
+      );
+    }
+
+    await ctx.db.patch(args.id, {
+      startTime: args.startTime,
+      expectedDuration: args.expectedDuration,
+
+      status: "upcoming",
+
+      rescheduleCount:
+        (interview.rescheduleCount ?? 0) + 1,
+
       updatedAt: Date.now(),
     });
   },

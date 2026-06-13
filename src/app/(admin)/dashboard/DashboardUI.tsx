@@ -16,6 +16,9 @@ import { format } from "date-fns";
 import CommentDialog from "@/components/CommentDialog";
 import DashboardSkeleton from "./DashboardSkeleton";
 import useCurrentTime from "@/hooks/useCurrentTime";
+import { useUser } from "@clerk/nextjs";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Interview = Doc<"interviews">;
 type InterviewStatus = "completed" | "succeeded" | "failed" | "cancelled";
@@ -25,6 +28,8 @@ function DashboardUI() {
   const interviews = useQuery(api.interviews.getAllInterviews);
   const updateStatus = useMutation(api.interviews.updateInterviewStatus);
   const currentTime = useCurrentTime();
+  const {user} = useUser();
+  const router = useRouter();
 
   const handleStatusUpdate = async (interviewId: Id<"interviews">, status:InterviewStatus ) => {
     try {
@@ -33,6 +38,14 @@ function DashboardUI() {
     } catch (error) {
       toast.error("Failed to update status");
     }
+  };
+
+  const handleReschedule = (
+    interview: Interview
+  ) => {
+    router.push(
+      `/schedule?rescheduleId=${interview._id}`
+    );
   };
 
     if (!interviews || !users) {
@@ -86,7 +99,17 @@ function DashboardUI() {
                               <AvatarFallback>{candidateInfo.initials}</AvatarFallback>
                             </Avatar>
                             <div>
-                              <CardTitle className="text-base">{candidateInfo.name}</CardTitle>
+                              <div className="flex items-center gap-2">
+                                <CardTitle className="text-base">
+                                  {candidateInfo.name}
+                                </CardTitle>
+
+                                {(interview.rescheduleCount ?? 0) > 0 && (
+                                  <Badge variant="outline">
+                                    Rescheduled
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground">{interview.title}</p>
                             </div>
                           </div>
@@ -108,7 +131,7 @@ function DashboardUI() {
 
                         {/* PASS & FAIL BUTTONS */}
                         <CardFooter className="p-4 pt-0 flex flex-col gap-3">
-                          {meetingStatus === "completed" && (
+                          {meetingStatus === "completed" && interview.createdBy === user?.id && (
                             <div className="flex gap-2 w-full">
                               <Button
                                 className="flex-1"
@@ -129,6 +152,17 @@ function DashboardUI() {
                           )}
                           {meetingStatus === "completed" && (
                             <CommentDialog interviewId={interview._id} />
+                          )}
+                          {meetingStatus === "missed" &&
+                            interview.createdBy === user?.id && 
+                            (interview.rescheduleCount ?? 0) < 1 && (
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => handleReschedule(interview)}
+                              >
+                                Reschedule
+                              </Button>
                           )}
                         </CardFooter>
                       </Card>
