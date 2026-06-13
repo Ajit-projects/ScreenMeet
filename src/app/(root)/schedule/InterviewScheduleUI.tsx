@@ -296,6 +296,22 @@ function InterviewScheduleUI() {
           startTime: meetingDate.getTime(),
           expectedDuration,
         });
+
+        const interview = interviews?.find(
+          (i) => i._id === editingInterviewId
+        );
+
+        if (interview?.streamCallId) {
+          const call = client.call(
+            "default",
+            interview.streamCallId
+          );
+
+          await call.update({
+            starts_at: meetingDate.toISOString(),
+          });
+        }
+
         toast.success("Interview rescheduled successfully");
         router.replace("/schedule");
       }
@@ -311,6 +327,24 @@ function InterviewScheduleUI() {
           interviewerIds,
         });
 
+        const interview = interviews?.find(
+          (i) => i._id === editingInterviewId
+        );
+
+        if (interview?.streamCallId) {
+          const call = client.call(
+            "default",
+            interview.streamCallId
+          );
+
+          await call.update({
+            starts_at: meetingDate.toISOString(),
+            custom: {
+              description: title,
+              additionalDetails: description,
+            },
+          });
+        }
         toast.success("Interview updated successfully");
       }
       else {
