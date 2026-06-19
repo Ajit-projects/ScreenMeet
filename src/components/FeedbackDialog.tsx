@@ -50,8 +50,8 @@ function FeedbackDialog({
                 <StarIcon
                     key={starValue}
                     className={`${size} ${starValue <= rating
-                            ? "fill-primary text-primary"
-                            : "text-muted-foreground"
+                        ? "fill-primary text-primary"
+                        : "text-muted-foreground"
                         }`}
                 />
             ))}
@@ -69,7 +69,8 @@ function FeedbackDialog({
         comments.length > 0
             ? (
                 comments.reduce(
-                    (sum, comment) => sum + comment.rating,
+                    (sum, comment) =>
+                        sum + comment.rating,
                     0
                 ) / comments.length
             ).toFixed(1)
@@ -87,7 +88,7 @@ function FeedbackDialog({
                 </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[700px]">
+            <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden">
                 <DialogHeader>
                     <DialogTitle>
                         Candidate Feedback
@@ -101,10 +102,10 @@ function FeedbackDialog({
                 ) : (
                     <>
                         {/* Summary */}
-                        <div className="rounded-lg border bg-card p-4 shadow-sm">
-                            <div className="flex items-center justify-between">
+                        <div className="rounded-xl border bg-card p-5">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <p className="font-medium">
+                                    <p className="font-semibold">
                                         Feedback Summary
                                     </p>
 
@@ -117,7 +118,7 @@ function FeedbackDialog({
                                     {averageRating && (
                                         <>
                                             <div className="text-right">
-                                                <p className="text-lg font-semibold">
+                                                <p className="text-xl font-semibold">
                                                     {averageRating}/5
                                                 </p>
 
@@ -136,17 +137,17 @@ function FeedbackDialog({
 
                                     <Badge variant="outline">
                                         {comments.length} Review
-                                        {comments.length > 1 ? "s" : ""}
+                                        {comments.length > 1
+                                            ? "s"
+                                            : ""}
                                     </Badge>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="border-t" />
-
                         {/* Reviews */}
-                        <ScrollArea className="max-h-[65vh]">
-                            <div className="space-y-4 pr-4">
+                        <ScrollArea className="h-[420px] mt-4">
+                            <div className="space-y-4">
                                 {comments.map((comment) => {
                                     const interviewer =
                                         getInterviewerInfo(
@@ -157,13 +158,15 @@ function FeedbackDialog({
                                     return (
                                         <div
                                             key={comment._id}
-                                            className="rounded-lg border bg-card p-4 shadow-sm"
+                                            className="rounded-xl border bg-card p-5"
                                         >
                                             <div className="flex items-start justify-between gap-4">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-10 w-10">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <Avatar className="h-10 w-10 shrink-0">
                                                         <AvatarImage
-                                                            src={interviewer.image}
+                                                            src={
+                                                                interviewer.image
+                                                            }
                                                         />
                                                         <AvatarFallback>
                                                             {
@@ -172,9 +175,11 @@ function FeedbackDialog({
                                                         </AvatarFallback>
                                                     </Avatar>
 
-                                                    <div>
-                                                        <p className="font-medium text-sm">
-                                                            {interviewer.name}
+                                                    <div className="min-w-0">
+                                                        <p className="font-medium text-sm truncate">
+                                                            {
+                                                                interviewer.name
+                                                            }
                                                         </p>
 
                                                         <p className="text-xs text-muted-foreground">
@@ -191,10 +196,12 @@ function FeedbackDialog({
                                                     </div>
                                                 </div>
 
-                                                {renderStars(comment.rating)}
+                                                {renderStars(
+                                                    comment.rating
+                                                )}
                                             </div>
 
-                                            <div className="mt-4 rounded-md border bg-muted/30 p-3">
+                                            <div className="mt-4 rounded-lg border bg-muted/40 p-3">
                                                 <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
                                                     {comment.content}
                                                 </p>
