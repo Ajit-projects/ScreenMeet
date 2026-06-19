@@ -71,12 +71,12 @@ export default function Home() {
             ))}
           </div>
 
-           <MeetingModal
+          <MeetingModal
             isOpen={showModal}
             onClose={() => setShowModal(false)}
             title={modalType === "join" ? "Join Meeting" : "Start Meeting"}
-            isJoinMeeting={modalType === "join"} 
-          /> 
+            isJoinMeeting={modalType === "join"}
+          />
         </>
       ) : (
         <>
@@ -87,15 +87,15 @@ export default function Home() {
 
           <div className="mt-8">
             {interviews === undefined ? (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <InterviewCardSkeleton key={i} />
-                  ))}
-                </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <InterviewCardSkeleton key={i} />
+                ))}
+              </div>
             ) : interviews.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {interviews.map((interview) => (
-                 <MeetingCard key={interview._id} interview={interview} currentTime={currentTime}/>
+                  <MeetingCard key={interview._id} interview={interview} currentTime={currentTime} hasFeedback={!!interview.hasFeedback} />
                 ))}
               </div>
             ) : (

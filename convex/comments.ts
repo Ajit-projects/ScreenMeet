@@ -56,15 +56,25 @@ export const addComment = mutation({
         updatedAt: Date.now(),
       });
 
+      await ctx.db.patch(args.interviewId, {
+        hasFeedback: true,
+      });
+
       return existingComment._id;
     }
 
-    return await ctx.db.insert("comments", {
+    const commentId = await ctx.db.insert("comments", {
       interviewId: args.interviewId,
       content: args.content,
       rating: args.rating,
       interviewerId: identity.subject,
     });
+
+    await ctx.db.patch(args.interviewId, {
+      hasFeedback: true,
+    });
+
+    return commentId;
   },
 });
 

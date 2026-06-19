@@ -109,6 +109,7 @@ export const createInterview = mutation({
       createdBy: identity.subject,
       createdAt: Date.now(),
       rescheduleCount: 0,
+      hasFeedback: false,
     });
   },
 });

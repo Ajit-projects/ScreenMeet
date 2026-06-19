@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { CalendarIcon, PencilIcon, Trash2Icon, Clock3Icon } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import FeedbackDialog from "./FeedbackDialog";
 
 type Interview = Doc<"interviews">;
 
@@ -15,6 +16,7 @@ type MeetingCardProps = {
   onCancel?: () => void;
   canManage?: boolean;
   currentTime: number;
+  hasFeedback?: boolean;
 };
 
 function MeetingCard({
@@ -23,6 +25,7 @@ function MeetingCard({
   onCancel,
   canManage,
   currentTime,
+  hasFeedback
 }: MeetingCardProps) {
   const { joinMeeting } = useMeetingActions();
 
@@ -136,15 +139,39 @@ function MeetingCard({
         )}
 
         {status === "succeeded" && (
-          <Button variant="ghost" disabled className="w-full">
-            Candidate Passed
-          </Button>
+          <div className="space-y-2">
+            <Button
+              variant="ghost"
+              disabled
+              className="w-full"
+            >
+              Candidate Passed
+            </Button>
+
+            {hasFeedback && (
+              <FeedbackDialog
+                interviewId={interview._id}
+              />
+            )}
+          </div>
         )}
 
         {status === "failed" && (
-          <Button variant="ghost" disabled className="w-full">
-            Candidate Failed
-          </Button>
+          <div className="space-y-2">
+            <Button
+              variant="ghost"
+              disabled
+              className="w-full"
+            >
+              Candidate Failed
+            </Button>
+
+            {hasFeedback && (
+              <FeedbackDialog
+                interviewId={interview._id}
+              />
+            )}
+          </div>
         )}
 
         {status === "missed" && (
@@ -153,10 +180,10 @@ function MeetingCard({
           </Button>
         )}
 
-        {status === "cancelled" && ( 
-          <Button variant="ghost" disabled className="w-full"> 
-            Interview Cancelled 
-            </Button> 
+        {status === "cancelled" && (
+          <Button variant="ghost" disabled className="w-full">
+            Interview Cancelled
+          </Button>
         )}
       </CardContent>
     </Card>
