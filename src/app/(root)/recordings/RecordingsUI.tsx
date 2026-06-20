@@ -12,6 +12,23 @@ function RecordingsUI() {
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
   const [isFetchingRecordings, setIsFetchingRecordings] = useState(true);
 
+  const validateRecording = async (
+    recording: CallRecording
+  ) => {
+    try {
+      const response = await fetch(
+        recording.url,
+        {
+          method: "HEAD",
+        }
+      );
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     const fetchRecordings = async () => {
       if (!calls) return;
@@ -21,7 +38,21 @@ function RecordingsUI() {
         const callData = await Promise.all(calls.map((call) => call.listRecordings()));
         const allRecordings = callData.flatMap((call) => call.recordings);
 
-        setRecordings(allRecordings);
+        const validRecordings = await Promise.all(
+          allRecordings.map(async (recording) => {
+            const isValid = await validateRecording(recording);
+
+            return isValid ? recording : null;
+          })
+        );
+
+        setRecordings(
+          validRecordings.filter(
+            (recording): recording is CallRecording =>
+              recording !== null
+          )
+        );
+
       } catch (error) {
         console.log("Error fetching recordings:", error);
       } finally {

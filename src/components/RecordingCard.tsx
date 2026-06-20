@@ -16,6 +16,10 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
     }
   };
 
+  const handlePlayRecording = () => {
+    window.open(recording.url, "_blank");
+  };
+
   const formattedStartTime = recording.start_time
     ? format(new Date(recording.start_time), "MMM d, yyyy, hh:mm a")
     : "Unknown";
@@ -48,7 +52,7 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
       <CardContent>
         <div
           className="w-full aspect-video bg-muted/50 rounded-lg flex items-center justify-center cursor-pointer group"
-          onClick={() => window.open(recording.url, "_blank")}
+          onClick={handlePlayRecording}
         >
           <div className="size-12 rounded-full bg-background/90 flex items-center justify-center group-hover:bg-primary transition-colors">
             <PlayIcon className="size-6 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
@@ -56,7 +60,7 @@ function RecordingCard({ recording }: { recording: CallRecording }) {
         </div>
       </CardContent>
       <CardFooter className="gap-2">
-        <Button className="flex-1" onClick={() => window.open(recording.url, "_blank")}>
+        <Button className="flex-1" onClick={handlePlayRecording}>
           <PlayIcon className="size-4 mr-2" />
           Play Recording
         </Button>
