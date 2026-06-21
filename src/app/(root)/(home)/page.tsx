@@ -4,7 +4,7 @@ import ActionCard from "@/components/ActionCard";
 import { QUICK_ACTIONS } from "@/constants";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useQuery } from "convex/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import MeetingModal from "@/components/MeetingModal";
@@ -12,6 +12,8 @@ import LoaderUI from "@/components/LoaderUI";
 import MeetingCard from "@/components/MeetingCard";
 import useCurrentTime from "@/hooks/useCurrentTime";
 import InterviewCardSkeleton from "../schedule/InterviewCardSkeleton";
+import CandidateInterviewFilters, { CandidateFilter } from "@/components/CandidateInterviewFilters";
+import { getMeetingStatus } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<"start" | "join">();
   const currentTime = useCurrentTime();
+  const [filter, setFilter] = useState<CandidateFilter>("all");
 
   useEffect(() => {
     if (isInterviewer) {
@@ -41,6 +44,107 @@ export default function Home() {
       default:
         router.push(`/${title.toLowerCase()}`);
     }
+  };
+
+  const interviewStats = useMemo(() => {
+    if (!interviews) {
+      return {
+        all: 0,
+        upcoming: 0,
+        live: 0,
+        completed: 0,
+        succeeded: 0,
+        failed: 0,
+        missed: 0,
+        cancelled: 0
+      };
+    }
+
+    return {
+      all: interviews.length,
+
+      upcoming: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "upcoming"
+      ).length,
+
+      live: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "live"
+      ).length,
+
+      completed: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "completed"
+      ).length,
+
+      succeeded: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "succeeded"
+      ).length,
+
+      failed: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "failed"
+      ).length,
+
+      missed: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "missed"
+      ).length,
+
+      cancelled: interviews.filter(
+        (i) =>
+          getMeetingStatus(i, currentTime) ===
+          "cancelled"
+      ).length,
+    };
+  }, [interviews, currentTime]);
+
+  const filteredInterviews = useMemo(() => {
+    if (!interviews) return [];
+
+    return interviews.filter((interview) => {
+      if (filter === "all") {
+        return true;
+      }
+
+      return (
+        getMeetingStatus(
+          interview,
+          currentTime
+        ) === filter
+      );
+    });
+  }, [
+    interviews,
+    filter,
+    currentTime,
+  ]);
+
+  const emptyMessages: Record<
+    CandidateFilter,
+    string
+  > = {
+    all: "You have no interviews at the moment.",
+    upcoming: "No upcoming interviews found.",
+    live: "No live interviews right now.",
+    completed:
+      "No interviews awaiting feedback.",
+    succeeded:
+      "No passed interviews yet.",
+    failed:
+      "No failed interviews.",
+    missed:
+      "No missed interviews.",
+    cancelled:
+      "No cancelled interviews.",
   };
 
   if (isLoading) return <LoaderUI />;
@@ -81,8 +185,19 @@ export default function Home() {
       ) : (
         <>
           <div>
-            <h1 className="text-3xl font-bold">Your Interviews</h1>
-            <p className="text-muted-foreground mt-1">View and join your scheduled interviews</p>
+            <h1 className="text-3xl font-bold">
+              Your Interviews
+            </h1>
+
+            <p className="text-muted-foreground mt-1">
+              View and join your scheduled interviews
+            </p>
+
+            <CandidateInterviewFilters
+              activeFilter={filter}
+              onFilterChange={setFilter}
+              counts={interviewStats}
+            />
           </div>
 
           <div className="mt-8">
@@ -92,15 +207,22 @@ export default function Home() {
                   <InterviewCardSkeleton key={i} />
                 ))}
               </div>
-            ) : interviews.length > 0 ? (
+            ) : filteredInterviews.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {interviews.map((interview) => (
-                  <MeetingCard key={interview._id} interview={interview} currentTime={currentTime} hasFeedback={!!interview.hasFeedback} />
+                {filteredInterviews.map((interview) => (
+                  <MeetingCard
+                    key={interview._id}
+                    interview={interview}
+                    currentTime={currentTime}
+                    hasFeedback={!!interview.hasFeedback}
+                  />
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                You have no scheduled interviews at the moment
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {emptyMessages[filter]}
+                </p>
               </div>
             )}
           </div>

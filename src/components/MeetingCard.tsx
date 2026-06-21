@@ -119,7 +119,7 @@ function MeetingCard({
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="min-h-[100px] flex flex-col justify-end">
         {status === "live" && (
           <Button className="w-full" onClick={() => joinMeeting(interview.streamCallId)}>
             Join Meeting
