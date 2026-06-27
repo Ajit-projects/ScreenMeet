@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useMutation, useQuery } from "convex/react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { api } from "../../../../convex/_generated/api";
 import toast from "react-hot-toast";
 
@@ -28,23 +28,20 @@ import {
 } from "@/components/ui/select";
 
 import UserInfo from "@/components/UserInfo";
-import { Loader2Icon, XIcon} from "lucide-react";
+import { Loader2Icon, SearchIcon, XIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { TIME_SLOTS } from "@/constants";
-import MeetingCard from "@/components/MeetingCard";
-import InterviewCardSkeleton from "./InterviewCardSkeleton";
-import { createMeetingDate } from "@/lib/utils";
-import useCurrentTime from "@/hooks/useCurrentTime";
-import { getMeetingStatus } from "@/lib/utils";
+import { createMeetingDate, isDateDisabled } from "@/lib/utils";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Id } from "../../../../convex/_generated/dataModel";
+import InterviewGrid from "./InterviewGrid";
 
 function InterviewScheduleUI() {
   const client = useStreamVideoClient();
   const { user } = useUser();
 
-  const interviews = useQuery(api.interviews.getAllInterviews);
-  const users = useQuery(api.users.getUsers);
+  const interviews = useQuery(api.interviews.getAllInterviews) ?? [];
+  const users = useQuery(api.users.getUsers) ?? [];
 
   const createInterview = useMutation(api.interviews.createInterview);
   const updateInterview = useMutation(api.interviews.updateInterview);
@@ -59,29 +56,19 @@ function InterviewScheduleUI() {
 
   const [selectedInterviewer, setSelectedInterviewer] = useState("");
   const [rescheduleHandled, setRescheduleHandled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const currentTime = useCurrentTime();
+  const router = useRouter();
 
-  const router= useRouter();
+  const candidates = useMemo(
+    () => users?.filter((u) => u.role === "candidate") ?? [],
+    [users]
+  );
 
-  const candidates =
-    users?.filter((u) => u.role === "candidate") ?? [];
-
-  const interviewers =
-    users?.filter((u) => u.role === "interviewer") ?? [];
-
-  const activeInterviews =
-    interviews?.filter((interview) => {
-      const status = getMeetingStatus(
-        interview,
-        currentTime
-      );
-
-      return (
-        status === "upcoming" ||
-        status === "live"
-      );
-    }) ?? [];
+  const interviewers = useMemo(
+    () => users?.filter((u) => u.role === "interviewer") ?? [],
+    [users]
+  );
 
   const initialFormState = useMemo(
     () => ({
@@ -149,34 +136,37 @@ function InterviewScheduleUI() {
   };
 
   const addInterviewer = (interviewerId: string) => {
-    if (!formData.interviewerIds.includes(interviewerId)) {
-      setFormData((prev) => ({
-        ...prev,
-        interviewerIds: [...prev.interviewerIds, interviewerId],
-      }));
-    }
-
-    setSelectedInterviewer("");
-  };
-
-  const removeInterviewer = (interviewerId: string) => {
-    if (interviewerId === user?.id) return;
+    if (formData.interviewerIds.includes(interviewerId)) return;
 
     setFormData((prev) => ({
       ...prev,
-      interviewerIds: prev.interviewerIds.filter(
-        (id) => id !== interviewerId
-      ),
+      interviewerIds: [...prev.interviewerIds, interviewerId],
     }));
   };
 
-  const selectedInterviewers = interviewers.filter((interviewer) =>
-    formData.interviewerIds.includes(interviewer.clerkId)
+  const removeInterviewer = useCallback((id: string) => {
+    if (id === user?.id) return;
+
+    setFormData(prev => ({
+      ...prev,
+      interviewerIds: prev.interviewerIds.filter(x => x !== id),
+    }));
+  }, [user?.id]);
+
+  const selectedInterviewers = useMemo(
+    () =>
+      interviewers.filter((i) =>
+        formData.interviewerIds.includes(i.clerkId)
+      ),
+    [interviewers, formData.interviewerIds]
   );
 
-  const availableInterviewers = interviewers.filter(
-    (interviewer) =>
-      !formData.interviewerIds.includes(interviewer.clerkId)
+  const availableInterviewers = useMemo(
+    () =>
+      interviewers.filter(
+        (i) => !formData.interviewerIds.includes(i.clerkId)
+      ),
+    [interviewers, formData.interviewerIds]
   );
 
   const handleEditInterview = (interview: any) => {
@@ -403,7 +393,7 @@ function InterviewScheduleUI() {
   return (
     <div className="container max-w-7xl mx-auto p-6 space-y-8">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">
             Interviews
@@ -413,6 +403,22 @@ function InterviewScheduleUI() {
             Schedule and manage interviews
           </p>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-md">
+          <SearchIcon
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+          />
+
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search interviews..."
+            className="h-11 pl-11 pr-4 rounded-lg border-border bg-background shadow-sm transition-all placeholder:text-muted-foreground
+            focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
+          />
+        </div>
 
         {/* DIALOG */}
         <Dialog
@@ -420,7 +426,7 @@ function InterviewScheduleUI() {
           onOpenChange={handleDialogChange}
         >
           <DialogTrigger asChild>
-            <Button size="lg">
+            <Button size="lg" className="w-full sm:w-auto shrink-0">
               Schedule Interview
             </Button>
           </DialogTrigger>
@@ -496,13 +502,15 @@ function InterviewScheduleUI() {
                     <SelectValue placeholder="Select candidate" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="max-h-72">
                     {candidates.map((candidate) => (
                       <SelectItem
                         key={candidate.clerkId}
                         value={candidate.clerkId}
                       >
-                        <UserInfo user={candidate} />
+                        <div className="flex w-full items-center">
+                          <UserInfo user={candidate} />
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -519,22 +527,22 @@ function InterviewScheduleUI() {
                   {selectedInterviewers.map((interviewer) => (
                     <div
                       key={interviewer.clerkId}
-                      className="inline-flex items-center gap-2 bg-secondary px-2 py-1 rounded-md text-sm"
+                      className="inline-flex items-center gap-2 rounded-md bg-secondary px-2 py-1 text-sm"
                     >
                       <UserInfo user={interviewer} />
 
-                      {!isRescheduleMode && interviewer.clerkId !== user?.id && (
-                        <button
-                          onClick={() =>
-                            removeInterviewer(
-                              interviewer.clerkId
-                            )
-                          }
-                          className="hover:text-destructive transition-colors"
-                        >
-                          <XIcon className="h-4 w-4" />
-                        </button>
-                      )}
+                      {!isRescheduleMode &&
+                        interviewer.clerkId !== user?.id && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeInterviewer(interviewer.clerkId)
+                            }
+                            className="rounded-sm transition-colors hover:text-destructive"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </button>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -542,14 +550,13 @@ function InterviewScheduleUI() {
                 {availableInterviewers.length > 0 && (
                   <Select
                     disabled={isRescheduleMode}
-                    value={selectedInterviewer}
                     onValueChange={addInterviewer}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Add interviewer" />
                     </SelectTrigger>
 
-                    <SelectContent>
+                    <SelectContent className="max-h-72">
                       {availableInterviewers.map(
                         (interviewer) => (
                           <SelectItem
@@ -583,12 +590,7 @@ function InterviewScheduleUI() {
                         date,
                       })
                     }
-                    disabled={(date) => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-
-                      return date < today;
-                    }}
+                    disabled={isDateDisabled}
                     className="rounded-md border"
                   />
                 </div>
@@ -612,7 +614,7 @@ function InterviewScheduleUI() {
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
 
-                    <SelectContent>
+                    <SelectContent className="max-h-72">
                       {TIME_SLOTS.map((time) => (
                         <SelectItem
                           key={time}
@@ -644,7 +646,7 @@ function InterviewScheduleUI() {
                     <SelectValue />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="max-h-72">
                     <SelectItem value="15">
                       15 Minutes
                     </SelectItem>
@@ -696,11 +698,11 @@ function InterviewScheduleUI() {
                       }
                     </>
                   ) : isRescheduleMode
-                  ? "Reschedule Interview"
-                  : editingInterviewId
+                    ? "Reschedule Interview"
+                    : editingInterviewId
 
-                  ? "Update Interview"
-                  : "Schedule Interview"}
+                      ? "Update Interview"
+                      : "Schedule Interview"}
                 </Button>
               </div>
             </div>
@@ -709,30 +711,14 @@ function InterviewScheduleUI() {
       </div>
 
       {/* INTERVIEWS */}
-      {interviews === undefined ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <InterviewCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : activeInterviews.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {activeInterviews.map((interview) => (
-            <MeetingCard
-              key={interview._id}
-              interview={interview}
-              canManage={interview.createdBy === user?.id}
-              onEdit={() => handleEditInterview(interview)}
-              onCancel={() => handleCancel(interview._id)}
-              currentTime={currentTime}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 text-muted-foreground">
-          No upcoming interviews scheduled
-        </div>
-      )}
+      <InterviewGrid
+        interviews={interviews}
+        users={users}
+        searchQuery={searchQuery}
+        currentUserId={user?.id}
+        onEdit={handleEditInterview}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

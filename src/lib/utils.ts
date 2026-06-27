@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { addMinutes, intervalToDuration, isBefore, isWithinInterval } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { Doc } from "../../convex/_generated/dataModel";
+import { TIME_SLOTS } from "@/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -136,3 +137,30 @@ export const createMeetingDate = (
 
   return meetingDate;
 };
+
+export function isDateDisabled(date: Date) {
+  const today = new Date();
+
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const selectedDay = new Date(date);
+  selectedDay.setHours(0, 0, 0, 0);
+
+  // Past dates
+  if (selectedDay < todayStart) {
+    return true;
+  }
+
+  // Last available slot
+  const lastSlot = TIME_SLOTS.at(-1)!;
+  const [hour, minute] = lastSlot.split(":").map(Number);
+
+  const lastSlotTime = new Date(today);
+  lastSlotTime.setHours(hour, minute, 0, 0);
+
+  return (
+    selectedDay.getTime() === todayStart.getTime() &&
+    today >= lastSlotTime
+  );
+}
