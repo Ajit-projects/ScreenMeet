@@ -35,6 +35,7 @@ import { createMeetingDate, isDateDisabled } from "@/lib/utils";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Id } from "../../../../convex/_generated/dataModel";
 import InterviewGrid from "./InterviewGrid";
+import { NativeSelect } from "@/components/ui/native-select";
 
 function InterviewScheduleUI() {
   const client = useStreamVideoClient();
@@ -54,7 +55,6 @@ function InterviewScheduleUI() {
 
   const [editingInterviewId, setEditingInterviewId] = useState<Id<"interviews"> | null>(null);
 
-  const [selectedInterviewer, setSelectedInterviewer] = useState("");
   const [rescheduleHandled, setRescheduleHandled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -431,7 +431,8 @@ function InterviewScheduleUI() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="sm:max-w-[500px] h-[calc(100vh-200px)] overflow-auto">
+          <DialogContent className="sm:max-w-[500px] h-[calc(100vh-200px)] overflow-auto"
+            onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle>
                 {isRescheduleMode
@@ -487,34 +488,29 @@ function InterviewScheduleUI() {
                 <label className="text-sm font-medium">
                   Candidate
                 </label>
-
-                <Select
+                <NativeSelect
                   disabled={isRescheduleMode}
                   value={formData.candidateId}
-                  onValueChange={(candidateId) =>
-                    setFormData({
-                      ...formData,
-                      candidateId,
-                    })
+                  onChange={(e) =>
+                    setFormData(prev => ({
+                      ...prev,
+                      candidateId: e.target.value,
+                    }))
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select candidate" />
-                  </SelectTrigger>
+                  <option value="" disabled hidden>
+                    Select candidate
+                  </option>
+                  {candidates.map(candidate => (
+                    <option
+                      key={candidate.clerkId}
+                      value={candidate.clerkId}
 
-                  <SelectContent className="max-h-72">
-                    {candidates.map((candidate) => (
-                      <SelectItem
-                        key={candidate.clerkId}
-                        value={candidate.clerkId}
-                      >
-                        <div className="flex w-full items-center">
-                          <UserInfo user={candidate} />
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    >
+                      {candidate.name}
+                    </option>
+                  ))}
+                </NativeSelect>
               </div>
 
               {/* INTERVIEWERS */}
@@ -678,7 +674,7 @@ function InterviewScheduleUI() {
               <div className="flex justify-end gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => setOpen(false)}
+                  onClick={() => handleDialogChange(false)}
                 >
                   Cancel
                 </Button>
