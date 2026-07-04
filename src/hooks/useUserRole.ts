@@ -1,11 +1,16 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
 export const useUserRole = () => {
+  const { isLoaded } = useUser();
 
-  const userData = useQuery(api.users.getCurrentUser);
+  const userData = useQuery(
+    api.users.getCurrentUser,
+    isLoaded ? {} : "skip"
+  );
 
-  const isLoading = userData === undefined;
+  const isLoading = !isLoaded || userData === undefined;
 
   return {
     isLoading,
