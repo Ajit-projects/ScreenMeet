@@ -1,78 +1,97 @@
-import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
-import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
+"use client";
 
-const useGetCalls = () => {
+import { useUser } from "@clerk/nextjs";
+import {
+  Call,
+  useStreamVideoClient,
+} from "@stream-io/video-react-sdk";
+import { useQuery } from "@tanstack/react-query";
+
+export default function useGetCalls() {
   const { user } = useUser();
   const client = useStreamVideoClient();
-  const [calls, setCalls] = useState<Call[]>();
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const loadCalls = async () => {
-      if (!client || !user?.id) return;
+  const {
+    data: calls = [],
+    isLoading,
+  } = useQuery({
+    queryKey: ["stream-calls", user?.id],
 
-      setIsLoading(true);
+    enabled: !!client && !!user?.id,
 
-      try {
-        const { calls } = await client.queryCalls({
-          sort: [{ field: "starts_at", direction: -1 }],
+    staleTime: 60 * 1000,
 
-          filter_conditions: {
-            starts_at: { $exists: true },
-            $or: [
-              { created_by_user_id: user.id },
-              { members: { $in: [user.id] } },
-            ],
+    gcTime: 5 * 60 * 1000,
+
+    queryFn: async () => {
+      const { calls } = await client!.queryCalls({
+        sort: [
+          {
+            field: "starts_at",
+            direction: -1,
+          },
+        ],
+
+        filter_conditions: {
+          starts_at: {
+            $exists: true,
           },
 
-          watch: false,
-        });
+          $or: [
+            {
+              created_by_user_id: user!.id,
+            },
 
-        setCalls(calls);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+            {
+              members: {
+                $in: [user!.id],
+              },
+            },
+          ],
+        },
 
-    loadCalls();
-  }, [client, user?.id]);
+        watch: false,
+      });
+
+      return calls;
+    },
+  });
 
   const now = new Date();
 
-  const endedCalls = calls?.filter((call: Call) => {
-    const startsAt = call.state?.startsAt;
-    const endedAt = call.state?.endedAt;
+  return {
+    calls,
 
-    return (
-      (startsAt && new Date(startsAt) < now) ||
-      !!endedAt
-    );
-  });
+    endedCalls: calls.filter((call: Call) => {
+      const start = call.state.startsAt;
+      const end = call.state.endedAt;
 
-  const upcomingCalls = calls?.filter((call: Call) => {
-    const startsAt = call.state?.startsAt;
+      return (
+        (start && new Date(start) < now) ||
+        !!end
+      );
+    }),
 
-    return (
-      startsAt &&
-      new Date(startsAt) > now
-    );
-  });
+    upcomingCalls: calls.filter((call: Call) => {
+      const start = call.state.startsAt;
 
-  const liveCalls = calls?.filter((call: Call) => {
-    const startsAt = call.state?.startsAt;
-    const endedAt = call.state?.endedAt;
+      return (
+        start &&
+        new Date(start) > now
+      );
+    }),
 
-    return (
-      startsAt &&
-      new Date(startsAt) < now &&
-      !endedAt
-    );
-  });
+    liveCalls: calls.filter((call: Call) => {
+      const start = call.state.startsAt;
+      const end = call.state.endedAt;
 
-  return { calls, endedCalls, upcomingCalls, liveCalls, isLoading };
-};
+      return (
+        start &&
+        new Date(start) < now &&
+        !end
+      );
+    }),
 
-export default useGetCalls;
+    isLoading,
+  };
+}
