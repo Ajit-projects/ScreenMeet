@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle"
-import { Code2 } from "lucide-react";
+import { Video } from "lucide-react";
 import { SignedIn, UserButton, SignedOut } from "@clerk/nextjs";
 import DasboardBtn from "./DashboardBtn";
 import LoginButton from "./LoginButton";
@@ -16,7 +16,7 @@ function Navbar() {
           href="/"
           className="group flex items-center gap-2 font-semibold text-2xl mr-6 font-mono hover:opacity-80 transition"
         >
-          <Code2 className="size-8 text-emerald-500 transition-transform duration-200 group-hover:rotate-6" />
+          <Video className="size-8 text-emerald-500 transition-transform duration-200 group-hover:rotate-6" />
           <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
             ScreenMeet
           </span>
