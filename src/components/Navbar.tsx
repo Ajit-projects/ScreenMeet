@@ -31,11 +31,6 @@ function Navbar() {
           </div>
         </SignedIn>
 
-        <SignedOut>
-          <div className="ml-auto">
-            <LoginButton />
-          </div>
-        </SignedOut>
       </div>
     </nav>
   );
